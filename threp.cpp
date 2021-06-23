@@ -43,6 +43,14 @@ int main(int argc, char *argv[]) {
 		th128decode(file, buffer, flength);
 	} else if (*(int *) buffer == 0x72333174) { //"t13r"
 		th13decode(file, buffer, flength);
+	} else if (*(int *) buffer == 0x72353174) {	//"t15r"
+		th13decode(file, buffer, flength);
+	} else if (*(int *) buffer == 0x72363174) {	//"t16r"
+		th13decode(file, buffer, flength);
+	} else if (*(int *) buffer == 0x72373174) {	//"t17r"
+		th13decode(file, buffer, flength);
+	} else if (*(int *) buffer == 0x72383174) {	//"t18r"
+		th13decode(file, buffer, flength);
 	} else {
 		printf("not supported format.\n");
 		return 0;

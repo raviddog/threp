@@ -17,9 +17,9 @@ void th11decode(char *file, unsigned char * buffer, unsigned int flength) {
 	unsigned char *rawdata = &buffer[0x24], *stagedata, *replaydata, *fpsdata, *decodedata;
 	unsigned int length = *((unsigned int*) (&buffer[0x1c]));
 	unsigned int dlength = *((unsigned int*) (&buffer[0x20]));
-	short keys[] = { 0xf0a1, 0xfca1, 0xfda1, 0xfda1, 0xfba1, 0x49a8, 0x4ca8, 0x49a8, 0xfaa1, 0x4aa8, 0x4ba8, 0x4aa8, 0xfba1,
+	int keys[] = { 0xf0a1, 0xfca1, 0xfda1, 0xfda1, 0xfba1, 0x49a8, 0x4ca8, 0x49a8, 0xfaa1, 0x4aa8, 0x4ba8, 0x4aa8, 0xfba1,
 			0x49a8, 0x4ca8, 0x49a8 };
-	short skey[61];
+	int skey[61];
 	sprintf(frec, "%s.txt", file);
 	sprintf(fraw, "%s.raw", file);
 
@@ -111,18 +111,18 @@ void th11decode(char *file, unsigned char * buffer, unsigned int flength) {
 		fprintf(fprec, "= Time =   ====================================================== ");
 		fprintf(fprec, "Operations ======================================================\r\n");
 		skey[60] = 0;
-		for (i = 0; i < frame; ++i) {
-			if (!(i % 60))
-				fprintf(fprec, "[%06d]   ", i / 60);
-			framekey = (replaydata[i * 6] >> 4) & 0xf;
-			skey[i % 60] = keys[framekey];
-			if (!((i + 1) % 60))
-				fprintf(fprec, "%s\r\n", (char *) skey);
-		}
-		if (i % 60) {
-			skey[i % 60] = 0;
-			fprintf(fprec, "%s\r\n", (char *) skey);
-		}
+		// for (i = 0; i < frame; ++i) {
+		// 	if (!(i % 60))
+		// 		fprintf(fprec, "[%06d]   ", i / 60);
+		// 	framekey = (replaydata[i * 6] >> 4) & 0xf;
+		// 	skey[i % 60] = keys[framekey];
+		// 	if (!((i + 1) % 60))
+		// 		fprintf(fprec, "%s\r\n", (char *) skey);
+		// }
+		// if (i % 60) {
+		// 	skey[i % 60] = 0;
+		// 	fprintf(fprec, "%s\r\n", (char *) skey);
+		// }
 		stagedata += llength + 0x90;
 	}
 	fclose(fprec);

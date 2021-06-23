@@ -17,9 +17,9 @@ void th12decode(char *file, unsigned char * buffer, unsigned int flength) {
 	unsigned char *rawdata = &buffer[0x24], *stagedata, *replaydata, *fpsdata, *decodedata;
 	unsigned int length = *((unsigned int*) (&buffer[0x1c]));
 	unsigned int dlength = *((unsigned int*) (&buffer[0x20]));
-	short keys[] = { 0xf0a1, 0xfca1, 0xfda1, 0xfda1, 0xfba1, 0x49a8, 0x4ca8, 0x49a8, 0xfaa1, 0x4aa8, 0x4ba8, 0x4aa8, 0xfba1,
+	int keys[] = { 0xf0a1, 0xfca1, 0xfda1, 0xfda1, 0xfba1, 0x49a8, 0x4ca8, 0x49a8, 0xfaa1, 0x4aa8, 0x4ba8, 0x4aa8, 0xfba1,
 			0x49a8, 0x4ca8, 0x49a8 };
-	short skey[61];
+	int skey[61];
 	sprintf(frec, "%s.txt", file);
 	sprintf(fraw, "%s.raw", file);
 
