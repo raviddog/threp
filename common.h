@@ -16,6 +16,7 @@
 void th06decode(char *file, unsigned char * buffer, unsigned int flength);
 void th07decode(char *file, unsigned char * buffer, unsigned int flength);
 void th08decode(char *file, unsigned char * buffer, unsigned int flength);
+void th09decode(char *file, unsigned char * buffer, unsigned int flength);
 void th10decode(char *file, unsigned char * buffer, unsigned int flength);
 void th11decode(char *file, unsigned char * buffer, unsigned int flength);
 void th12decode(char *file, unsigned char * buffer, unsigned int flength);

@@ -31,6 +31,8 @@ int main(int argc, char *argv[]) {
 		th07decode(file, buffer, flength);
 	} else if (*(int *) buffer == 0x50523854) { //"T8RP"
 		th08decode(file, buffer, flength);
+	} else if (*(int *) buffer == 0x50523954) {	//"T9RP"
+		th09decode(file, buffer, flength);
 	} else if (*(int *) buffer == 0x72303174) { //"t10r"
 		th10decode(file, buffer, flength);
 	} else if (*(int *) buffer == 0x72313174) { //"t11r"
