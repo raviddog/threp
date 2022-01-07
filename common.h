@@ -24,6 +24,8 @@ void th125decode(char *file, unsigned char * buffer, unsigned int flength);
 void th128decode(char *file, unsigned char * buffer, unsigned int flength);
 void th13decode(char *file, unsigned char * buffer, unsigned int flength);
 
+void th06encode(char *file, unsigned char * buffer, unsigned int flength);
+
 unsigned int get_bit(unsigned char* buffer, unsigned int &pointer, unsigned char &filter, unsigned char length);
 unsigned int decompress(unsigned char * buffer, unsigned char * decode, unsigned int length);
 void decode(unsigned char * buffer, int length, int block_size, unsigned char base, unsigned char add);
