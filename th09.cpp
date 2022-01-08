@@ -1,21 +1,22 @@
 #include "common.h"
 
 unsigned int th09decode(unsigned char **buffer, unsigned int flength) {
-	unsigned char *rawdata = buffer[0xc0], *decodedata;
+	unsigned char *buf = *buffer;
+	unsigned char *rawdata = &buf[0xc0], *decodedata;
 	unsigned int i, length, dlength, rlength, checksum;
 	unsigned char base;
-	base = *((unsigned char*) (buffer[0x15]));
-	length = *((unsigned int*) (buffer[0x0c]));
+	base = *((unsigned char*) (buf[0x15]));
+	length = *((unsigned int*) (buf[0x0c]));
 	for (i = 24; i < length; ++i) {
-		*buffer[i] -= base;
+		buf[i] -= base;
 		base += 7;
 	}
     
-	dlength = *((unsigned int*) (buffer[0x1c]));
+	dlength = *((unsigned int*) (&buf[0x1c]));
 	decodedata = new unsigned char[dlength];
 	rlength = decompress(rawdata, decodedata, length - 0xc0);
 
-	delete[] buffer;
+	delete[] buf;
 	*buffer = decodedata;
 	return dlength;
 }

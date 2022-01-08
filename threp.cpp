@@ -9,6 +9,7 @@
 #include "common.h"
 
 #include <cstdio>
+#include <cstring>
 #include "io.h"
 
 int main(int argc, char *argv[]) {
@@ -26,41 +27,52 @@ int main(int argc, char *argv[]) {
 		printf("%s not found.\n", file);
 		return 0;
 	}
-	fread(buffer, 0x100000, 1, fp);
+	fread(buf, 0x100000, 1, fp);
 	flength = _filelength(fp->_file);
 	fclose(fp);
 	if (**(int **) buffer == 0x50523654) { //"T6RP"
-		th06decode(buffer, flength);
+		flength = th06decode(buffer, flength);
 	} else if (**(int **) buffer == 0x50523754) { //"T7RP"
-		th07decode(buffer, flength);
+		flength = th07decode(buffer, flength);
 	} else if (**(int **) buffer == 0x50523854) { //"T8RP"
-		th08decode(buffer, flength);
+		flength = th08decode(buffer, flength);
 	} else if (**(int **) buffer == 0x50523954) {	//"T9RP"
-		th09decode(buffer, flength);
+		flength = th09decode(buffer, flength);
 	} else if (**(int **) buffer == 0x72303174) { //"t10r"
-		th10decode(buffer, flength);
+		flength = th10decode(buffer, flength);
 	} else if (**(int **) buffer == 0x72313174) { //"t11r"
-		th11decode(buffer, flength);
+		flength = th11decode(buffer, flength);
 	} else if (**(int **) buffer == 0x72323174) { //"t12r"
-		th12decode(buffer, flength);
+		flength = th12decode(buffer, flength);
 	} else if (**(int **) buffer == 0x35323174) { //"t125"
-		th125decode(buffer, flength);
+		flength = th125decode(buffer, flength);
 	} else if (**(int **) buffer == 0x72383231) { //"128r"
-		th128decode(buffer, flength);
+		flength = th128decode(buffer, flength);
 	} else if (**(int **) buffer == 0x72333174) { //"t13r"
-		th13decode(buffer, flength);
+		flength = th13decode(buffer, flength);
 	} else if (**(int **) buffer == 0x72353174) {	//"t15r"
-		th13decode(buffer, flength);
+		flength = th13decode(buffer, flength);
 	} else if (**(int **) buffer == 0x72363174) {	//"t16r"
-		th13decode(buffer, flength);
+		flength = th13decode(buffer, flength);
 	} else if (**(int **) buffer == 0x72373174) {	//"t17r"
-		th13decode(buffer, flength);
+		flength = th13decode(buffer, flength);
 	} else if (**(int **) buffer == 0x72383174) {	//"t18r"
-		th13decode(buffer, flength);
+		flength = th13decode(buffer, flength);
 	} else {
 		printf("not supported format.\n");
 		return 0;
 	}
-	delete[] buffer;
+	buf = *buffer;
+	int nl = strlen(file);
+	file[nl - 2] = 'a';
+	file[nl - 1] = 'w';
+	fp = fopen(file, "wb");
+	if(!fp) {
+		printf("couldnt open output file for writing\n");
+	} else {
+		fwrite(*buffer, flength, 1, fp);
+		fclose(fp);
+	}
+	delete[] buf;
 	return 0;
 }

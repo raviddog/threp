@@ -7,15 +7,15 @@
 
 #include "common.h"
 
-
 unsigned int th06decode(unsigned char **buffer, unsigned int flength) {
 	unsigned int i;
-	unsigned char base;
-	base = *((unsigned char*) (buffer[0x0e]));
+	unsigned char base, *buf = *buffer;
+	base = *((unsigned char*) (&buf[0x0e]));
 	for (i = 0x0f; i < flength; ++i) {
-		*buffer[i] -= base;
+		buf[i] -= base;
 		base += 7;
 	}
+	buffer = &buf;
 	return flength;
 }
 
