@@ -7,35 +7,22 @@
 
 #include "common.h"
 
-void th06decode(char *file, unsigned char * buffer, unsigned int flength) {
-	char frec[50];
-	char fraw[50];
-	unsigned int i, checksum;
+
+unsigned int th06decode(unsigned char **buffer, unsigned int flength) {
+	unsigned int i;
 	unsigned char base;
-	base = *((unsigned char*) (&buffer[0x0e]));
-	sprintf(frec, "%s.txt", file);
-	sprintf(fraw, "%s.raw", file);
+	base = *((unsigned char*) (buffer[0x0e]));
 	for (i = 0x0f; i < flength; ++i) {
-		buffer[i] -= base;
+		*buffer[i] -= base;
 		base += 7;
 	}
-	checksum = 0x3f000318;
-	for (i = 0x0e; i < flength; ++i)
-		checksum += buffer[i];
-	FILE *fpraw = fopen(fraw, "wb");
-	fwrite(buffer, flength, 1, fpraw);
-	fclose(fpraw);
-	printf("Decoding done.");
+	return flength;
 }
 
-void th06encode(char *file, unsigned char * buffer, unsigned int flength) {
-	char frec[50];
-	char fraw[50];
+void th06encode(unsigned char * buffer, unsigned int flength) {
 	unsigned int i, checksum;
 	unsigned char base;
-	base = *((unsigned char*) (&buffer[0x0e]));
-	sprintf(frec, "%s.txt", file);
-	sprintf(fraw, "%s.raw", file);
+	base = *((unsigned char*) (buffer[0x0e]));
 	checksum = 0x3f000318;
 	for (i = 0x0e; i < flength; ++i)
 		checksum += buffer[i];
@@ -43,8 +30,5 @@ void th06encode(char *file, unsigned char * buffer, unsigned int flength) {
 		buffer[i] += base;
 		base += 7;
 	}
-	FILE *fpraw = fopen(fraw, "wb");
-	fwrite(buffer, flength, 1, fpraw);
-	fclose(fpraw);
-	printf("Encoding done.\nChecksum is %d", checksum);
+	// printf("Encoding done.\nChecksum is %d", checksum);
 }

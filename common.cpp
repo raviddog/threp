@@ -7,6 +7,9 @@
 
 #include "common.h"
 
+#include <memory>
+#include <cstring>
+
 unsigned int get_bit(unsigned char* buffer, unsigned int &pointer, unsigned char &filter, unsigned char length) {
 	unsigned char i;
 	unsigned int result = 0;
