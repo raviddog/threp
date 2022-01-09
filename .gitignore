@@ -2,3 +2,5 @@
 *.rpy
 *.json
 *.raw
+/build
+/CMakeFiles
