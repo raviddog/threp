@@ -12,7 +12,7 @@ unsigned int th07decode(unsigned char **buffer, unsigned int flength) {
 	unsigned char *rawdata = &buf[0x54], *decodedata;
 	unsigned int i, length, dlength, rlength, checksum;
 	unsigned char base;
-	base = *((unsigned char*) (buf[0x0d]));
+	base = *(unsigned char*) (&buf[0x0d]);
 	for (i = 0x10; i < flength; ++i) {
 		buf[i] -= base;
 		base += 7;

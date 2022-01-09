@@ -11,8 +11,8 @@ unsigned int th128decode(unsigned char **buffer, unsigned int flength) {
 	unsigned char *buf = *buffer;
 	unsigned int rlength;
 	unsigned char *rawdata = &buf[0x24], *decodedata;
-	unsigned int length = *((unsigned int*) (buf[0x1c]));
-	unsigned int dlength = *((unsigned int*) (buf[0x20]));
+	unsigned int length = *((unsigned int*) (&buf[0x1c]));
+	unsigned int dlength = *((unsigned int*) (&buf[0x20]));
 
 	decodedata = new unsigned char[dlength];
 	decode(rawdata, length, 0x800, 0x5e, 0xe7);
