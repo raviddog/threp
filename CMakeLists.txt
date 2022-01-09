@@ -5,8 +5,8 @@ add_library(common STATIC common.cpp th06.cpp th07.cpp th08.cpp th09.cpp th10.cp
 
 add_executable(threp threp.cpp)
 target_link_libraries(threp common)
-target_link_libraries(threp -Wl,-subsystem,console -g)
+target_link_libraries(threp -Wl,-subsystem,console)
 
 add_executable(thjson thjson.cpp)
 target_link_libraries(thjson common)
-target_link_libraries(thjson -Wl,-subsystem,console -g)
+target_link_libraries(thjson -Wl,-subsystem,console)
