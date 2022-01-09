@@ -108,7 +108,7 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 	//	version
 	writer.Key("version");
 	char ver[7];
-	snprintf(ver, 7, "%#.2hhx%.2hhx", buffer[0x05], buffer[0x06]);
+	snprintf(ver, 7, "%#.2hhx%.2hhx", buffer[0x05], buffer[0x04]);
 	writer.String(ver);
 
 	//	player
@@ -143,16 +143,24 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 	buffer = *buf;
 
 	//	date, null termianted string
-	unsigned char *date = &buffer[0x10];
-	if(date[9] != '\0') date[9] = '\0';
+	char date[11];
+	date[0] = '2';
+	date[1] = '0';
+	memcpy(date+2, &buffer[0x16], 2);
+	date[4] = '-';
+	memcpy(date+5, &buffer[0x10], 2);
+	date[7] = '-';
+	memcpy(date+8, &buffer[0x13], 2);
+	date[10] = '\0';
+	// if(date[9] != '\0') date[9] = '\0';
 	writer.Key("date");
-	writer.String((char*)date);
+	writer.String(date);
 
 	//	name, null terminated string
-	unsigned char *name = &buffer[0x1a];
-	if(name[9] != '\0') name[9] = '\0';
+	// if(name[9] != '\0') name[9] = '\0';
+	buffer[0x18] = 0x01;
 	writer.Key("name");
-	writer.String((char*)name);
+	writer.String((char*)&buffer[0x19]);
 
 	//	score
 	writer.Key("score");
@@ -161,8 +169,9 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 	//	slowdown
 	//	0x2c, float32
 	writer.Key("slowdown");
-	float val = * (float *) &buffer[0x2c];
-	writer.Double((double)val);
+	char val[6];
+	snprintf(val, 6, "%5f", * (float *) &buffer[0x2c]);
+	writer.String(val);
 
 	writer.Key("stage");
 	writer.StartArray();
@@ -200,13 +209,50 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 		writer.EndObject();
 
 	} else {
+		max_stage++;
+		for(int i = 0; i < max_stage; i++) {
+			writer.StartObject();
+			writer.Key("stage");
+			writer.Int(i + 1);
 
+			writer.Key("score");
+			writer.Uint(* (uint32_t *) &buffer[stage_offset[i]]);
+
+			writer.Key("power");
+			writer.Uint(buffer[stage_offset[i] + 0x8]);
+
+			writer.Key("lives");
+			writer.Uint((uint32_t)buffer[stage_offset[i] + 0x9]);
+
+			writer.Key("bombs");
+			writer.Uint((uint32_t)buffer[stage_offset[i] + 0xa]);
+
+			writer.Key("rank");
+			writer.Uint((uint32_t)buffer[stage_offset[i] + 0xb]);
+
+			writer.EndObject();
+
+		}
 	}
 
 	writer.EndArray();
 	writer.EndObject();
 
-	char *json = new char[s.GetSize()];
-	memcpy(json, s.GetString(), s.GetSize());
+	int jsonsize = s.GetSize();
+	char *json = new char[jsonsize + 1];
+	memcpy(json, s.GetString(), jsonsize + 1);
+	json[jsonsize] = '\0';
 	return json;
+}
+
+char * th07json(unsigned char *buffer, unsigned int flength) {
+	using namespace rapidjson;
+	StringBuffer s;
+	Writer<StringBuffer> writer(s);
+
+	writer.StartObject();
+	writer.Key("gameid");
+	writer.Int(1);
+
+
 }
