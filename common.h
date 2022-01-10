@@ -24,6 +24,9 @@ unsigned int th125decode(unsigned char **buffer, unsigned int flength);
 unsigned int th128decode(unsigned char **buffer, unsigned int flength);
 unsigned int th13decode(unsigned char **buffer, unsigned int flength);
 
+unsigned int th07decode1(unsigned char **buffer, unsigned int flength);
+unsigned int th07decode2(unsigned char **buffer, unsigned int flength);
+
 void th06encode(unsigned char * buffer, unsigned int flength);
 
 unsigned int get_bit(unsigned char* buffer, unsigned int &pointer, unsigned char &filter, unsigned char length);

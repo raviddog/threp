@@ -17,6 +17,7 @@
 
 
 char * th06json(unsigned char *buffer, unsigned int flength);
+char * th07json(unsigned char *buffer, unsigned int flength);
 
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
@@ -49,6 +50,7 @@ int main(int argc, char *argv[]) {
 			break;
 		case 0x50523754:  //"T7RP"
 			// th07decode(buffer, flength);
+			printf(th07json(buffer, flength));
 			break;
 		case 0x50523854:  //"T8RP"
 			// th08decode(buffer, flength);
@@ -189,7 +191,7 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 		//	extra
 		writer.StartObject();
 		writer.Key("stage");
-		writer.Int(7);
+		writer.Uint(7u);
 
 		writer.Key("score");
 		writer.Uint(* (uint32_t *) &buffer[stage_offset[6]]);
@@ -254,5 +256,125 @@ char * th07json(unsigned char *buffer, unsigned int flength) {
 	writer.Key("gameid");
 	writer.Int(1);
 
+	unsigned char **buf = &buffer;
+	flength = th07decode1(buf, flength);
+	buffer = *buf;
 
+	uint32_t stage_offset[7];
+	int max_stage = 0;
+	for(int i = 0; i < 7; i++) {
+		stage_offset[i] = * (uint32_t *) &buffer[0x1c + 4 * i];
+		if(stage_offset[i] != 0x00) {
+			stage_offset[i] -= 0x54;
+			max_stage = i;
+		}
+	}
+
+	flength = th07decode2(buf, flength);
+	buffer = *buf;
+
+	writer.Key("shot");
+	switch(buffer[0x02]) {
+		case 0:
+			writer.String("ReimuA");
+			break;
+		case 1:
+			writer.String("ReimuB");
+			break;
+		case 2:
+			writer.String("MarisaA");
+			break;
+		case 3:
+			writer.String("MarisaB");
+			break;
+		case 4:
+			writer.String("SakuyaA");
+			break;
+		case 5:
+			writer.String("SakuyaB");
+			break;
+		default:
+			writer.String("Unknown");
+			break;
+	}
+
+	writer.Key("difficulty");
+	writer.Uint(buffer[0x03]);
+
+	char date[11];
+	date[0] = '2';
+	date[1] = '0';
+	date[2] = '0';
+	date[3] = '0';
+	date[4] = '-';
+	memcpy(date+5, &buffer[0x04], 2);
+	date[7] = '-';
+	memcpy(date+8, &buffer[0x07], 2);
+	date[10] = '\0';
+	// if(date[9] != '\0') date[9] = '\0';
+	writer.Key("date");
+	writer.String(date);
+
+	writer.Key("name");
+	buffer[0x09] = 0x01;
+	writer.String((char*)&buffer[0x0a]);
+
+	writer.Key("score");
+	uint32_t score = *(uint32_t*)&buffer[0x18];
+	uint64_t score_long = score;
+	score_long *= 10;
+	writer.Uint64(score_long);
+
+	writer.Key("slowdown");
+	char val[6];
+	snprintf(val, 6, "%5f", * (float *) &buffer[0x78]);
+	writer.String(val);
+
+	writer.Key("stage");
+	writer.StartArray();
+
+	if(max_stage == 6) {
+		//	extra or phantasm
+		writer.StartObject();
+		writer.Key("stage");
+		writer.Uint(7u);
+
+		writer.Key("score");
+		uint32_t score = *(uint32_t*)&buffer[stage_offset[6]];
+		uint64_t score_long = score;
+		score_long *= 10;
+		writer.Uint64(score_long);
+
+		writer.Key("PIV");
+		writer.Uint(*(uint32_t*) &buffer[stage_offset[6] + 0x8]);
+
+		writer.Key("point_items");
+		writer.Uint(*(uint32_t*) &buffer[stage_offset[6] + 0x4]);
+
+		writer.Key("graze");
+		writer.Uint(*(uint32_t*) &buffer[stage_offset[6] + 0x14]);
+
+		writer.Key("power");
+		writer.Uint(buffer[stage_offset[6] + 0x22]);
+
+		writer.Key("lives");
+		writer.Uint(buffer[stage_offset[6] + 0x23]);
+
+		writer.Key("bombs");
+		writer.Uint(buffer[stage_offset[6] + 0x24]);
+
+		writer.EndObject();
+
+	} else {
+
+	}
+
+	writer.EndArray();
+	writer.EndObject();
+
+	int jsonsize = s.GetSize();
+	char *json = new char[jsonsize + 1];
+	memcpy(json, s.GetString(), jsonsize + 1);
+	json[jsonsize] = '\0';
+	return json;
 }
