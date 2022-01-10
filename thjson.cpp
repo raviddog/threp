@@ -160,9 +160,11 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 
 	//	name, null terminated string
 	// if(name[9] != '\0') name[9] = '\0';
-	buffer[0x18] = 0x01;
+	// buffer[0x18] = 0x01;
 	writer.Key("name");
-	writer.String((char*)&buffer[0x19]);
+	char name[9];
+	memcpy(name, &buffer[0x19], 9);
+	writer.String(name);
 
 	//	score
 	writer.Key("score");
@@ -186,33 +188,10 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 			max_stage = i;
 		}
 	}
-
-	if(max_stage == 6) {
-		//	extra
-		writer.StartObject();
-		writer.Key("stage");
-		writer.Uint(7u);
-
-		writer.Key("score");
-		writer.Uint(* (uint32_t *) &buffer[stage_offset[6]]);
-
-		writer.Key("power");
-		writer.Uint(buffer[stage_offset[6] + 0x8]);
-
-		writer.Key("lives");
-		writer.Uint((uint32_t)buffer[stage_offset[6] + 0x9]);
-
-		writer.Key("bombs");
-		writer.Uint((uint32_t)buffer[stage_offset[6] + 0xa]);
-
-		writer.Key("rank");
-		writer.Uint((uint32_t)buffer[stage_offset[6] + 0xb]);
-
-		writer.EndObject();
-
-	} else {
-		max_stage++;
-		for(int i = 0; i < max_stage; i++) {
+	
+	max_stage++;
+	for(int i = 0; i < max_stage; i++) {
+		if(stage_offset[i] != 0x00) {
 			writer.StartObject();
 			writer.Key("stage");
 			writer.Int(i + 1);
@@ -233,7 +212,6 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 			writer.Uint((uint32_t)buffer[stage_offset[i] + 0xb]);
 
 			writer.EndObject();
-
 		}
 	}
 
@@ -316,8 +294,10 @@ char * th07json(unsigned char *buffer, unsigned int flength) {
 	writer.String(date);
 
 	writer.Key("name");
-	buffer[0x09] = 0x01;
-	writer.String((char*)&buffer[0x0a]);
+	// buffer[0x09] = 0x01;
+	char name[9];
+	memcpy(name, &buffer[0x0a], 9);
+	writer.String(name);
 
 	writer.Key("score");
 	uint32_t score = *(uint32_t*)&buffer[0x18];
@@ -333,40 +313,45 @@ char * th07json(unsigned char *buffer, unsigned int flength) {
 	writer.Key("stage");
 	writer.StartArray();
 
-	if(max_stage == 6) {
-		//	extra or phantasm
-		writer.StartObject();
-		writer.Key("stage");
-		writer.Uint(7u);
+	max_stage++;
+	for(int i = 0; i < max_stage; i++) {
+		if(stage_offset[i] != 0x00) {
+			writer.StartObject();
+			writer.Key("stage");
+			writer.Uint(i + 1);
 
-		writer.Key("score");
-		uint32_t score = *(uint32_t*)&buffer[stage_offset[6]];
-		uint64_t score_long = score;
-		score_long *= 10;
-		writer.Uint64(score_long);
+			writer.Key("score");
+			uint32_t score = *(uint32_t*)&buffer[stage_offset[i]];
+			uint64_t score_long = score;
+			score_long *= 10;
+			writer.Uint64(score_long);
 
-		writer.Key("PIV");
-		writer.Uint(*(uint32_t*) &buffer[stage_offset[6] + 0x8]);
+			writer.Key("point_items");
+			writer.Uint(*(uint32_t*) &buffer[stage_offset[i] + 0x4]);
 
-		writer.Key("point_items");
-		writer.Uint(*(uint32_t*) &buffer[stage_offset[6] + 0x4]);
+			writer.Key("PIV");
+			writer.Uint(*(uint32_t*) &buffer[stage_offset[i] + 0x8]);
 
-		writer.Key("graze");
-		writer.Uint(*(uint32_t*) &buffer[stage_offset[6] + 0x14]);
+			writer.Key("cherrymax");
+			writer.Uint(*(uint32_t*) &buffer[stage_offset[i] + 0xc]);
 
-		writer.Key("power");
-		writer.Uint(buffer[stage_offset[6] + 0x22]);
+			writer.Key("cherry");
+			writer.Uint(*(uint32_t*) &buffer[stage_offset[i] + 0x10]);
 
-		writer.Key("lives");
-		writer.Uint(buffer[stage_offset[6] + 0x23]);
+			writer.Key("graze");
+			writer.Uint(*(uint32_t*) &buffer[stage_offset[i] + 0x14]);
 
-		writer.Key("bombs");
-		writer.Uint(buffer[stage_offset[6] + 0x24]);
+			writer.Key("power");
+			writer.Uint(buffer[stage_offset[i] + 0x22]);
 
-		writer.EndObject();
+			writer.Key("lives");
+			writer.Uint(buffer[stage_offset[i] + 0x23]);
 
-	} else {
+			writer.Key("bombs");
+			writer.Uint(buffer[stage_offset[i] + 0x24]);
 
+			writer.EndObject();
+		}
 	}
 
 	writer.EndArray();
