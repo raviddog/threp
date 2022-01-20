@@ -7,6 +7,7 @@
  */
 
 #include "common.h"
+#include "thdecode.h"
 
 #include <cstdio>
 #include <cstring>

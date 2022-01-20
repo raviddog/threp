@@ -9,16 +9,14 @@
 */
 
 #include "common.h"
+#include "thdecode.h"
+#include "thjson.h"
 
 #include <cstdio>
 #include <iostream>
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-
-char * th06json(unsigned char *buffer, unsigned int flength);
-char * th07json(unsigned char *buffer, unsigned int flength);
-char * th08json(unsigned char *buffer, unsigned int flength);
 
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
@@ -111,7 +109,7 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 
 	//	version
 	writer.Key("version");
-	char ver[7];
+	char ver[7] = "      ";
 	snprintf(ver, 7, "%#.2hhx%.2hhx", buffer[0x05], buffer[0x04]);
 	writer.String(ver);
 
@@ -147,16 +145,10 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 	buffer = *buf;
 
 	//	date, null termianted string
-	char date[11];
-	date[0] = '2';
-	date[1] = '0';
+	char date[11] = "2000-01-01";
 	memcpy(date+2, &buffer[0x16], 2);
-	date[4] = '-';
 	memcpy(date+5, &buffer[0x10], 2);
-	date[7] = '-';
 	memcpy(date+8, &buffer[0x13], 2);
-	date[10] = '\0';
-	// if(date[9] != '\0') date[9] = '\0';
 	writer.Key("date");
 	writer.String(date);
 
@@ -221,9 +213,8 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 	writer.EndObject();
 
 	int jsonsize = s.GetSize();
-	char *json = new char[jsonsize + 1];
-	memcpy(json, s.GetString(), jsonsize + 1);
-	json[jsonsize] = '\0';
+	char *json = new char[jsonsize];
+	memcpy(json, s.GetString(), jsonsize);
 	return json;
 }
 

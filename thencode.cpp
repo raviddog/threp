@@ -1,24 +1,3 @@
-/*
- * th06.cpp
- *
- *  Created on: 2010-5-9
- *      Author: Argon
- */
-
-#include "common.h"
-
-unsigned int th06decode(unsigned char **buffer, unsigned int flength) {
-	unsigned int i;
-	unsigned char base, *buf = *buffer;
-	base = *((unsigned char*) (&buf[0x0e]));
-	for (i = 0x0f; i < flength; ++i) {
-		buf[i] -= base;
-		base += 7;
-	}
-	buffer = &buf;
-	return flength;
-}
-
 void th06encode(unsigned char * buffer, unsigned int flength) {
 	unsigned int i, checksum;
 	unsigned char base;
