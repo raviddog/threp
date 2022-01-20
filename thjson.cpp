@@ -144,7 +144,6 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 
 	//	date, null terminated string
 	char date[11] = "2000-01-01";
-	memcpy(date+2, &rep->date[6], 2);
 	memcpy(date+5, rep->date, 2);
 	memcpy(date+8, &rep->date[3], 2);
 	writer.Key("date");
@@ -213,122 +212,108 @@ char * th07json(unsigned char *buffer, unsigned int flength) {
 	writer.Key("gameid");
 	writer.Int(1);
 
+	th07_replay_header_t *header = (th07_replay_header_t*)buffer;
+
+	writer.Key("version");
+	char ver[5] = "    ";
+	snprintf(ver, 5, "%.2hhx%.2hhx", header->version[0], header->version[1]);
+	writer.String(ver);
+
 	unsigned char **buf = &buffer;
 	flength = th07decode1(buf, flength);
 	buffer = *buf;
 
-	uint32_t stage_offset[7];
-	int max_stage = 0;
+	//	need to save the stage offsets from header, so make a copy of the memory
+	//	also decrement each stage offset by 84 to account for full header size
+	header = (th07_replay_header_t*)malloc(sizeof(th07_replay_header_t));
+	memcpy(header, buffer, sizeof(th07_replay_header_t));
 	for(int i = 0; i < 7; i++) {
-		stage_offset[i] = * (uint32_t *) &buffer[0x1c + 4 * i];
-		if(stage_offset[i] != 0x00) {
-			stage_offset[i] -= 0x54;
-			max_stage = i;
+		if(header->stage_offsets[i] != 0x00) {
+			header->stage_offsets[i] -= 84;
 		}
 	}
 
 	flength = th07decode2(buf, flength);
 	buffer = *buf;
 
+	const char *shots[] = {
+		"ReimuA",
+		"ReimuB",
+		"MarisaA",
+		"MarisaB",
+		"SakuyaA",
+		"SakuyaB"
+	};
+
+	th07_replay_t *rep = (th07_replay_t*)buffer;
+	
 	writer.Key("shot");
-	switch(buffer[0x02]) {
-		case 0:
-			writer.String("ReimuA");
-			break;
-		case 1:
-			writer.String("ReimuB");
-			break;
-		case 2:
-			writer.String("MarisaA");
-			break;
-		case 3:
-			writer.String("MarisaB");
-			break;
-		case 4:
-			writer.String("SakuyaA");
-			break;
-		case 5:
-			writer.String("SakuyaB");
-			break;
-		default:
-			writer.String("Unknown");
-			break;
+	if(rep->shot < 6) {
+		writer.String(shots[rep->shot]);
+	} else {
+		writer.String("Unknown");
 	}
 
 	writer.Key("difficulty");
-	writer.Uint(buffer[0x03]);
+	writer.Uint(rep->difficulty);
 
-	char date[11];
-	date[0] = '2';
-	date[1] = '0';
-	date[2] = '0';
-	date[3] = '0';
-	date[4] = '-';
-	memcpy(date+5, &buffer[0x04], 2);
-	date[7] = '-';
-	memcpy(date+8, &buffer[0x07], 2);
-	date[10] = '\0';
-	// if(date[9] != '\0') date[9] = '\0';
+	char date[11] = "2000-01-01";
+	memcpy(date+2, &rep->date[6], 2);
+	memcpy(date+5, rep->date, 2);
+	memcpy(date+8, &rep->date[3], 2);
 	writer.Key("date");
 	writer.String(date);
 
+	if(rep->name[9] != '\0') rep->name[9] = '\0';
 	writer.Key("name");
-	// buffer[0x09] = 0x01;
-	char name[9];
-	memcpy(name, &buffer[0x0a], 9);
-	name[8] = '\0';
-	writer.String(name);
+	writer.String(rep->name);
 
 	writer.Key("score");
-	uint32_t score = *(uint32_t*)&buffer[0x18];
-	uint64_t score_long = score;
-	score_long *= 10;
-	writer.Uint64(score_long);
+	writer.Uint64((uint64_t)rep->score * 10);
 
 	writer.Key("slowdown");
 	char val[6];
-	snprintf(val, 6, "%5f", * (float *) &buffer[0x78]);
+	snprintf(val, 6, "%5f", rep->slowdown);
 	writer.String(val);
 
 	writer.Key("stage");
 	writer.StartArray();
 
-	max_stage++;
-	for(int i = 0; i < max_stage; i++) {
-		if(stage_offset[i] != 0x00) {
+	// max_stage++;
+	for(int i = 0; i < 7; i++) {
+		if(header->stage_offsets[i] != 0x00) {
+			th07_replay_stage_t *stage = (th07_replay_stage_t*)&buffer[header->stage_offsets[i]];
+
 			writer.StartObject();
 			writer.Key("stage");
 			writer.Uint(i + 1);
 
 			writer.Key("score");
-			uint32_t score = *(uint32_t*)&buffer[stage_offset[i]];
-			uint64_t score_long = score;
-			score_long *= 10;
-			writer.Uint64(score_long);
+			writer.Uint64((uint64_t)stage->score * 10);
 
 			writer.Key("point_items");
-			writer.Uint(*(uint32_t*) &buffer[stage_offset[i] + 0x4]);
+			writer.Uint(stage->point_items);
 
 			writer.Key("PIV");
-			writer.Uint(*(uint32_t*) &buffer[stage_offset[i] + 0x8]);
+			writer.Uint(stage->piv);
 
 			writer.Key("cherrymax");
-			writer.Uint(*(uint32_t*) &buffer[stage_offset[i] + 0xc]);
+			writer.Uint(stage->cherrymax);
 
 			writer.Key("cherry");
-			writer.Uint(*(uint32_t*) &buffer[stage_offset[i] + 0x10]);
+			writer.Uint(stage->cherry);
 
 			writer.Key("graze");
-			writer.Uint(*(uint32_t*) &buffer[stage_offset[i] + 0x14]);
+			writer.Uint(stage->graze);
 
 			writer.Key("power");
-			writer.Uint(buffer[stage_offset[i] + 0x22]);
+			writer.Uint(stage->power);
 
 			writer.Key("lives");
-			writer.Uint(buffer[stage_offset[i] + 0x23]);
+			writer.Uint(stage->lives);
 
 			writer.Key("bombs");
-			writer.Uint(buffer[stage_offset[i] + 0x24]);
+			writer.Uint(stage->bombs);
 
 			writer.EndObject();
 		}
@@ -336,6 +321,8 @@ char * th07json(unsigned char *buffer, unsigned int flength) {
 
 	writer.EndArray();
 	writer.EndObject();
+
+	free(header);
 
 	int jsonsize = s.GetSize();
 	char *json = new char[jsonsize + 1];

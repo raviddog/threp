@@ -48,6 +48,45 @@ struct th06_replay_stage_t {
     uint8_t rank;	
 };
 
+struct th07_replay_header_t {
+    char magic[4];
+    char version[2];
+    char unknown[7];
+    uint8_t key;
+    char unknown2[14];
+    uint32_t stage_offsets[7];
+};
+
+struct th07_replay_t {
+    char unknown[2];
+    uint8_t shot;
+    uint8_t difficulty;
+    char date[6];
+    char name[9];
+    char unknown2[5];
+    uint32_t score;
+    char unknown3[92];
+    float slowdown;
+};
+
+struct th07_replay_stage_t {
+    uint32_t score; //  end of stage score
+    uint32_t point_items;
+    uint32_t piv;
+    uint32_t cherrymax;
+    uint32_t cherry;
+    uint32_t graze;
+    uint32_t unknown;
+    uint32_t unknown2;
+    uint32_t unknown3;
+    uint16_t unknown4;
+    uint8_t power;
+    uint8_t lives;
+    uint8_t bombs;
+    uint8_t unknown5;
+
+};
+
 struct th10_replay_header_t {
     uint32_t magic;
     uint32_t version;   //  i assume, please doublecheck
