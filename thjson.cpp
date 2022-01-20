@@ -11,6 +11,7 @@
 #include "common.h"
 #include "thdecode.h"
 #include "thjson.h"
+#include "zuntypes.h"
 
 #include <cstdio>
 #include <iostream>
@@ -107,103 +108,88 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 	writer.Key("gameid");
 	writer.Int(0);
 
+	th06_replay_header_t *header = (th06_replay_header_t *)buffer;
+
 	//	version
 	writer.Key("version");
-	char ver[7] = "      ";
-	snprintf(ver, 7, "%#.2hhx%.2hhx", buffer[0x05], buffer[0x04]);
+	char ver[5] = "    ";
+	snprintf(ver, 5, "%.2hhx%.2hhx", header->version[0], header->version[1]);
 	writer.String(ver);
 
 	//	player
+	const char *shots[] = {
+		"ReimuA",
+		"ReimuB",
+		"MarisaA",
+		"MarisaB"
+	};
+
 	writer.Key("shot");
-	char shot = buffer[0x06];
-	switch((int)shot) {
-		case 0:
-			writer.String("ReimuA");
-			break;
-		case 1:
-			writer.String("ReimuB");
-			break;
-		case 2:
-			writer.String("MarisaA");
-			break;
-		case 3:
-			writer.String("MarisaB");
-			break;
-		default:
-			writer.String("Unknown");
-			break;
+	if(header->shot < 4) {
+		writer.String(shots[header->shot]);
+	} else {
+		writer.String("Unknown");
 	}
 
 	//	difficulty
 	writer.Key("difficulty");
-	unsigned char diff = buffer[0x07];
-	writer.Uint((uint32_t)diff);
+	writer.Uint(header->difficulty);
 
 	//	now decode the replay
 	unsigned char **buf = &buffer;
 	flength = th06decode(buf, flength);
 	buffer = *buf;
 
-	//	date, null termianted string
+	th06_replay_t *rep = (th06_replay_t*)&buffer[0x10];
+
+	//	date, null terminated string
 	char date[11] = "2000-01-01";
-	memcpy(date+2, &buffer[0x16], 2);
-	memcpy(date+5, &buffer[0x10], 2);
-	memcpy(date+8, &buffer[0x13], 2);
+	memcpy(date+2, &rep->date[6], 2);
+	memcpy(date+5, rep->date, 2);
+	memcpy(date+8, &rep->date[3], 2);
 	writer.Key("date");
 	writer.String(date);
 
 	//	name, null terminated string
-	// if(name[9] != '\0') name[9] = '\0';
-	// buffer[0x18] = 0x01;
+	//	ensure that its null terminated
+	if(rep->name[9] != '\0') rep->name[9] = '\0';
 	writer.Key("name");
-	char name[9];
-	memcpy(name, &buffer[0x19], 9);
-	writer.String(name);
+	writer.String(rep->name);
 
 	//	score
 	writer.Key("score");
-	writer.Uint(*(uint32_t*) &buffer[0x24]);
+	writer.Uint(rep->score);
 
-	//	slowdown
-	//	0x2c, float32
+	//	slowdown, format to appear as ingame
 	writer.Key("slowdown");
 	char val[6];
-	snprintf(val, 6, "%5f", * (float *) &buffer[0x2c]);
+	snprintf(val, 6, "%5f", rep->slowdown);
 	writer.String(val);
 
 	writer.Key("stage");
 	writer.StartArray();
 
-	uint32_t stage_offset[7];
-	int max_stage = 0;
 	for(int i = 0; i < 7; i++) {
-		stage_offset[i] = * (uint32_t *) &buffer[0x34 + 4 * i];
-		if(stage_offset[i] != 0x00) {
-			max_stage = i;
-		}
-	}
-
-	max_stage++;
-	for(int i = 0; i < max_stage; i++) {
-		if(stage_offset[i] != 0x00) {
+		if(rep->stage_offsets[i] != 0x00) {
+			th06_replay_stage_t *stage = (th06_replay_stage_t*)&buffer[rep->stage_offsets[i]];
 			writer.StartObject();
 			writer.Key("stage");
 			writer.Int(i + 1);
 
 			writer.Key("score");
-			writer.Uint(* (uint32_t *) &buffer[stage_offset[i]]);
+			writer.Uint(stage->score);
 
 			writer.Key("power");
-			writer.Uint(buffer[stage_offset[i] + 0x8]);
+			writer.Uint(stage->power);
 
 			writer.Key("lives");
-			writer.Uint((uint32_t)buffer[stage_offset[i] + 0x9]);
+			writer.Int(stage->lives);
 
 			writer.Key("bombs");
-			writer.Uint((uint32_t)buffer[stage_offset[i] + 0xa]);
+			writer.Int(stage->bombs);
 
 			writer.Key("rank");
-			writer.Uint((uint32_t)buffer[stage_offset[i] + 0xb]);
+			writer.Uint(stage->rank);
 
 			writer.EndObject();
 		}
@@ -628,8 +614,8 @@ char * th08json(unsigned char *buffer, unsigned int flength) {
 	writer.EndObject();
 
 	int jsonsize = s.GetSize();
-	char *json = new char[jsonsize + 1];
-	memcpy(json, s.GetString(), jsonsize + 1);
+	char *json = new char[jsonsize+1];
+	memcpy(json, s.GetString(), jsonsize+1);
 	json[jsonsize] = '\0';
 	return json;
 
