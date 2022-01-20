@@ -15,26 +15,24 @@ unsigned int th06decode(unsigned char **buffer, unsigned int flength) {
 unsigned int th07decode(unsigned char **buffer, unsigned int flength) {
 	unsigned char *buf = *buffer;
 	unsigned char *rawdata = &buf[0x54], *decodedata;
-	unsigned int i, length, dlength, rlength, checksum;
+	unsigned int i, length, dlength;
 	unsigned char base;
 	base = *(unsigned char*) (&buf[0x0d]);
 	for (i = 0x10; i < flength; ++i) {
 		buf[i] -= base;
 		base += 7;
 	}
-	// checksum = 0x3f000318;
-	// for (i = 0x0d; i < flength; ++i)
-	// 	checksum += &buf[i];
+	//  unsiugned int checksum = 0x3f000318;
+	//  for (i = 0x0d; i < flength; ++i)
+	// 	    checksum += &buf[i];
 	length = *((unsigned int*) (&buf[0x14]));
 	dlength = *((unsigned int*) (&buf[0x18]));
 	decodedata = new unsigned char[dlength];
-	rlength = decompress(rawdata, decodedata, length);
+	decompress(rawdata, decodedata, length);
 	
 	delete[] buf;
 	*buffer = decodedata;
-	return dlength;	
-
-	// return flength;
+	return dlength;
 }
 
 unsigned int th07decode1(unsigned char **buffer, unsigned int flength) {
@@ -52,14 +50,14 @@ unsigned int th07decode1(unsigned char **buffer, unsigned int flength) {
 unsigned int th07decode2(unsigned char **buffer, unsigned int flength) {
 	unsigned char *buf = *buffer;
 	unsigned char *rawdata = &buf[0x54], *decodedata;
-	unsigned int length, dlength, rlength, checksum;
-	// checksum = 0x3f000318;
-	// for (i = 0x0d; i < flength; ++i)
-	// 	checksum += &buf[i];
+	unsigned int length, dlength;
+	//  unsigned int checksum = 0x3f000318;
+	//  for (i = 0x0d; i < flength; ++i)
+	// 	    checksum += &buf[i];
 	length = *((unsigned int*) (&buf[0x14]));
 	dlength = *((unsigned int*) (&buf[0x18]));
 	decodedata = new unsigned char[dlength];
-	rlength = decompress(rawdata, decodedata, length);
+	decompress(rawdata, decodedata, length);
 
 	delete[] buf;
 	*buffer = decodedata;
@@ -69,7 +67,7 @@ unsigned int th07decode2(unsigned char **buffer, unsigned int flength) {
 unsigned int th08decode(unsigned char **buffer, unsigned int flength) {
 	unsigned char *buf = *buffer;
 	unsigned char *rawdata = &buf[0x68], *decodedata;
-	unsigned int i, length, dlength, rlength;
+	unsigned int i, length, dlength;
 	unsigned char base;
 	base = *((unsigned char*) (&buf[0x15]));
 	length = *((unsigned int*) (&buf[0x0c]));
@@ -77,12 +75,12 @@ unsigned int th08decode(unsigned char **buffer, unsigned int flength) {
 		buf[i] -= base;
 		base += 7;
 	}
-	// checksum = 0x3f000318;
-	// for (i = 21; i < length; ++i)
-	// 	checksum += *buffer[i];
+	//  unsigned int checksum = 0x3f000318;
+	//  for (i = 21; i < length; ++i)
+	// 	    checksum += *buffer[i];
 	dlength = *((unsigned int*) (&buf[0x1c]));
 	decodedata = new unsigned char[dlength];
-	rlength = decompress(rawdata, decodedata, length - 0x68);
+	decompress(rawdata, decodedata, length - 0x68);
 
 	delete[] buf;
 	*buffer = decodedata;
@@ -105,14 +103,14 @@ unsigned int th08decode1(unsigned char **buffer, unsigned int flength) {
 unsigned int th08decode2(unsigned char **buffer, unsigned int flength) {
 	unsigned char *buf = *buffer;
 	unsigned char *rawdata = &buf[0x68], *decodedata;
-	unsigned int length, dlength, rlength, checksum;
+	unsigned int length, dlength;
 	length = *((unsigned int*) (&buf[0x0c]));
-	// checksum = 0x3f000318;
-	// for (i = 21; i < length; ++i)
-	// 	checksum += *buffer[i];
+	//  unsigned int checksum = 0x3f000318;
+	//  for (i = 21; i < length; ++i)
+	// 	    checksum += *buffer[i];
 	dlength = *((unsigned int*) (&buf[0x1c]));
 	decodedata = new unsigned char[dlength];
-	rlength = decompress(rawdata, decodedata, length - 0x68);
+	decompress(rawdata, decodedata, length - 0x68);
 
 	delete[] buf;
 	*buffer = decodedata;
@@ -123,7 +121,7 @@ unsigned int th08decode2(unsigned char **buffer, unsigned int flength) {
 unsigned int th09decode(unsigned char **buffer, unsigned int flength) {
 	unsigned char *buf = *buffer;
 	unsigned char *rawdata = &buf[0xc0], *decodedata;
-	unsigned int i, length, dlength, rlength, checksum;
+	unsigned int i, length, dlength;
 	unsigned char base;
 	base = *((unsigned char*) (&buf[0x15]));
 	length = *((unsigned int*) (&buf[0x0c]));
@@ -134,7 +132,7 @@ unsigned int th09decode(unsigned char **buffer, unsigned int flength) {
     
 	dlength = *((unsigned int*) (&buf[0x1c]));
 	decodedata = new unsigned char[dlength];
-	rlength = decompress(rawdata, decodedata, length - 0xc0);
+	decompress(rawdata, decodedata, length - 0xc0);
 
 	delete[] buf;
 	*buffer = decodedata;
@@ -143,7 +141,6 @@ unsigned int th09decode(unsigned char **buffer, unsigned int flength) {
 
 unsigned int th10decode(unsigned char **buffer, unsigned int flength) {
 	unsigned char *buf = *buffer;
-	unsigned int rlength;
 	unsigned char *rawdata = &buf[0x24], *decodedata;
 	unsigned int length = *(unsigned int*) (&buf[0x1c]);
 	unsigned int dlength = *(unsigned int*) (&buf[0x20]);
@@ -151,7 +148,7 @@ unsigned int th10decode(unsigned char **buffer, unsigned int flength) {
 	decodedata = new unsigned char[dlength];
 	decode(rawdata, length, 0x400, 0xaa, 0xe1);
 	decode(rawdata, length, 0x80, 0x3d, 0x7a);
-	rlength = decompress(rawdata, decodedata, length);
+	decompress(rawdata, decodedata, length);
 
 	delete[] buf;
 	*buffer = decodedata;
@@ -160,7 +157,6 @@ unsigned int th10decode(unsigned char **buffer, unsigned int flength) {
 
 unsigned int th11decode(unsigned char **buffer, unsigned int flength) {
 	unsigned char *buf = *buffer;
-	unsigned int rlength;
 	unsigned char *rawdata = &buf[0x24], *decodedata;
 	unsigned int length = *((unsigned int*) (&buf[0x1c]));
 	unsigned int dlength = *((unsigned int*) (&buf[0x20]));
@@ -168,7 +164,7 @@ unsigned int th11decode(unsigned char **buffer, unsigned int flength) {
 	decodedata = new unsigned char[dlength];
 	decode(rawdata, length, 0x800, 0xaa, 0xe1);
 	decode(rawdata, length, 0x40, 0x3d, 0x7a);
-	rlength = decompress(rawdata, decodedata, length);
+	decompress(rawdata, decodedata, length);
 
 	delete[] buf;
 	*buffer = decodedata;
@@ -177,7 +173,6 @@ unsigned int th11decode(unsigned char **buffer, unsigned int flength) {
 
 unsigned int th12decode( unsigned char **buffer, unsigned int flength) {
 	unsigned char *buf = *buffer;
-	unsigned int rlength;
 	unsigned char *rawdata = &buf[0x24], *decodedata;
 	unsigned int length = *((unsigned int*) (&buf[0x1c]));
 	unsigned int dlength = *((unsigned int*) (&buf[0x20]));
@@ -185,7 +180,7 @@ unsigned int th12decode( unsigned char **buffer, unsigned int flength) {
 	decodedata = new unsigned char[dlength];
 	decode(rawdata, length, 0x800, 0x5e, 0xe1);
 	decode(rawdata, length, 0x40, 0x7d, 0x3a);
-	rlength = decompress(rawdata, decodedata, length);
+	decompress(rawdata, decodedata, length);
 	
 	delete[] buf;
 	*buffer = decodedata;
@@ -194,7 +189,6 @@ unsigned int th12decode( unsigned char **buffer, unsigned int flength) {
 
 unsigned int th13decode(unsigned char **buffer, unsigned int flength) {
 	unsigned char *buf = *buffer;
-	unsigned int rlength;
 	unsigned char *rawdata = &buf[0x24], *decodedata;
 	unsigned int length = *((unsigned int*) (&buf[0x1c]));
 	unsigned int dlength = *((unsigned int*) (&buf[0x20]));
@@ -202,7 +196,7 @@ unsigned int th13decode(unsigned char **buffer, unsigned int flength) {
 	decodedata = new unsigned char[dlength];
 	decode(rawdata, length, 0x400, 0x5c, 0xe1);
 	decode(rawdata, length, 0x100, 0x7d, 0x3a);
-	rlength = decompress(rawdata, decodedata, length);
+	decompress(rawdata, decodedata, length);
 
 	delete[] buf;
 	*buffer = decodedata;
@@ -212,14 +206,13 @@ unsigned int th13decode(unsigned char **buffer, unsigned int flength) {
 unsigned int th125decode(unsigned char **buffer, unsigned int flength) {
 	unsigned char *buf = *buffer;
 	unsigned char *rawdata = &buf[0x24], *decodedata;
-	unsigned int rlength;
 	unsigned int length = *((unsigned int*) (&buf[0x1c]));
 	unsigned int dlength = *((unsigned int*) (&buf[0x20]));
 
 	decodedata = new unsigned char[dlength];
 	decode(rawdata, length, 0x800, 0x5e, 0xe1);
 	decode(rawdata, length, 0x40, 0x7d, 0x3a);
-	rlength = decompress(rawdata, decodedata, length);
+	decompress(rawdata, decodedata, length);
 	
 	delete[] buf;
 	*buffer = decodedata;
@@ -228,7 +221,6 @@ unsigned int th125decode(unsigned char **buffer, unsigned int flength) {
 
 unsigned int th128decode(unsigned char **buffer, unsigned int flength) {
 	unsigned char *buf = *buffer;
-	unsigned int rlength;
 	unsigned char *rawdata = &buf[0x24], *decodedata;
 	unsigned int length = *((unsigned int*) (&buf[0x1c]));
 	unsigned int dlength = *((unsigned int*) (&buf[0x20]));
@@ -236,7 +228,7 @@ unsigned int th128decode(unsigned char **buffer, unsigned int flength) {
 	decodedata = new unsigned char[dlength];
 	decode(rawdata, length, 0x800, 0x5e, 0xe7);
 	decode(rawdata, length, 0x80, 0x7d, 0x36);
-	rlength = decompress(rawdata, decodedata, length);
+	decompress(rawdata, decodedata, length);
 	
 	delete[] buf;
 	*buffer = decodedata;
