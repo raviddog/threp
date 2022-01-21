@@ -46,15 +46,15 @@ int main(int argc, char *argv[]) {
 	switch(magic) {
 		case 0x50523654:  //"T6RP"
 			// th06decode(buffer, flength);
-			printf(th06json(buffer, flength));
+			printf("%s", th06json(buffer, flength));
 			break;
 		case 0x50523754:  //"T7RP"
 			// th07decode(buffer, flength);
-			printf(th07json(buffer, flength));
+			printf("%s", th07json(buffer, flength));
 			break;
 		case 0x50523854:  //"T8RP"
 			// th08decode(buffer, flength);
-			printf(th08json(buffer, flength));
+			printf("%s", th08json(buffer, flength));
 			break;
 		case 0x50523954: 	//"T9RP"
 			// th09decode(buffer, flength);
@@ -151,7 +151,7 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 
 	//	name, null terminated string
 	//	ensure that its null terminated
-	if(rep->name[9] != '\0') rep->name[9] = '\0';
+	if(rep->name[8] != '\0') rep->name[8] = '\0';
 	writer.Key("name");
 	writer.String(rep->name);
 
@@ -258,13 +258,12 @@ char * th07json(unsigned char *buffer, unsigned int flength) {
 	writer.Uint(rep->difficulty);
 
 	char date[11] = "2000-01-01";
-	memcpy(date+2, &rep->date[6], 2);
 	memcpy(date+5, rep->date, 2);
 	memcpy(date+8, &rep->date[3], 2);
 	writer.Key("date");
 	writer.String(date);
 
-	if(rep->name[9] != '\0') rep->name[9] = '\0';
+	if(rep->name[8] != '\0') rep->name[8] = '\0';
 	writer.Key("name");
 	writer.String(rep->name);
 
@@ -369,7 +368,7 @@ char * th08json(unsigned char *buffer, unsigned int flength) {
 				memcpy(date, &buffer[user_offset + 0x2e], l);
 				date[l] = '\0';
 				writer.String(date, l + 1, true);
-				delete date;
+				delete[] date;
 
 				user_offset += l;
 				user_offset += 0xb;
