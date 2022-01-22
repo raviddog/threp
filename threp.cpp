@@ -80,7 +80,8 @@ int main(int argc, char *argv[]) {
 
 	buf = *buffer;
 	int nl = strlen(file);
-	//	rename a .rpy file to .raw
+	//	rename extension to .raw
+	file[nl - 3] = 'r';
 	file[nl - 2] = 'a';
 	file[nl - 1] = 'w';
 	fp = fopen(file, "wb");
