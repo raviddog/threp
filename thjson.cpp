@@ -342,61 +342,99 @@ char * th08json(unsigned char *buffer, unsigned int flength) {
 	uint32_t user_offset = header->comp_size;
 	if(user_offset + 8 < flength) {
 		uint32_t magic = *(uint32_t*)&buffer[user_offset];
-		if(magic == 0x55534552) {
+		if(magic == 0x52455355) {
 			uint32_t user_length = *(uint32_t*)&buffer[user_offset + 4];
 			if(user_offset + user_length <= flength) {
 				writer.Key("user");
 				writer.StartObject();
 				
-				user_offset += 21;
+				user_offset += 25;
 				int l = 0;
 				
 				writer.Key("name");
-				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0d0a;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				buffer[user_offset + l] = '\0';
+				writer.String((const char*)&buffer[user_offset], l);
+				
+				user_offset += 13 + l;
+				l = 0;
+				
+				writer.Key("date");
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
 				buffer[user_offset + l] = '\0';
 				writer.String((const char*)&buffer[user_offset], l);
 				
 				user_offset += 11 + l;
 				l = 0;
 				
-				writer.Key("date");
-				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0d0a;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
-				buffer[user_offset + l] = '\0';
-				writer.String((const char*)&buffer[user_offset], l);
-				
-				user_offset += 9 + l;
-				l = 0;
-				
 				writer.Key("shot");
-				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0d0a;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
 				buffer[user_offset + l] = '\0';
 				writer.String((const char*)&buffer[user_offset], l);
 				
-				user_offset += 8 + l;
+				user_offset += 10 + l;
 				l = 0;
 				
 				writer.Key("score");
-				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0d0a;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
-				buffer[user_offset + l] = '\0';
-				char *score = new char[l + 3];
-				memcpy(score, &buffer[user_offset], l);
-				score[l + 1] = '0';
-				score[l + 2] = '\0';
-				writer.String(score);
-				
-				user_offset += 8 + l;
-				l = 0;
-				
-				writer.Key("difficulty");
-				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0d0a;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
 				buffer[user_offset + l] = '\0';
 				writer.String((const char*)&buffer[user_offset], l);
 				
-				user_offset += l;
+				user_offset += 10 + l;
+				l = 0;
+				
+				writer.Key("difficulty");
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				buffer[user_offset + l] = '\0';
+				writer.String((const char*)&buffer[user_offset], l);
+				
+				user_offset += 2 + l;
 				l = 0;
 				
 				writer.Key("stage");
-				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0d0a;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				buffer[user_offset + l] = '\0';
+				writer.String((const char*)&buffer[user_offset], l);
+
+				user_offset += 11 + l;
+				l = 0;
+
+				writer.Key("misses");
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				buffer[user_offset + l] = '\0';
+				writer.String((const char*)&buffer[user_offset], l);
+
+				user_offset += 11 + l;
+				l = 0;
+
+				writer.Key("bombs");
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				buffer[user_offset + l] = '\0';
+				writer.String((const char*)&buffer[user_offset], l);
+
+				user_offset += 13 + l;
+				l = 0;
+
+				writer.Key("slowdown");
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				buffer[user_offset + l] = '\0';
+				writer.String((const char*)&buffer[user_offset], l);
+
+				user_offset += 10 + l;
+				l = 0;
+
+				//	it's labelled as lives in the replay, but i think its the rating or something
+				//	also its not written properly
+				// writer.Key("skill");
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				buffer[user_offset + l] = '\0';
+				// writer.String((const char*)&buffer[user_offset], l);
+
+				user_offset += 21 + l;
+				l = 0;
+
+				writer.Key("version");
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
 				buffer[user_offset + l] = '\0';
 				writer.String((const char*)&buffer[user_offset], l);
 				
