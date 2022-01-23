@@ -16,5 +16,7 @@ unsigned int th07decode1(unsigned char **buffer, unsigned int flength);
 unsigned int th07decode2(unsigned char **buffer, unsigned int flength);
 unsigned int th08decode1(unsigned char **buffer, unsigned int flength);
 unsigned int th08decode2(unsigned char **buffer, unsigned int flength);
+unsigned int th09decode1(unsigned char **buffer, unsigned int flength);
+unsigned int th09decode2(unsigned char **buffer, unsigned int flength);
 
 #endif

@@ -121,6 +121,35 @@ struct th08_replay_stage_t {
 	uint8_t unknown3;
 };
 
+struct th09_replay_header_t {
+    char magic[4];
+    char version[2];
+    char unknown[6];
+    uint32_t comp_size; //  doubles as USERDATA offset
+    uint32_t unknown2;  //  probs checksum or some shit
+    uint8_t key;
+    char unknown3[7];
+    uint32_t size;
+    uint32_t stage_offsets[40];
+};
+
+struct th09_replay_t {
+    char unknown[4];
+    char date[10];  //  double null terminated string
+    char name[9];   //  null terminated string
+    uint8_t difficulty;
+};
+
+struct th09_replay_stage_t {
+    uint32_t score;
+    uint16_t pair;  //  idk what this is but each stage pair has the same value
+                    //  maybe its the stage time or something
+    uint8_t shot;
+    uint8_t ai; //  i think? 0 = human 1 = ai
+    uint8_t lives;
+    uint8_t unknown3;   //  it's usually 4, but idk
+};
+
 struct th10_replay_header_t {
     uint32_t magic;
     uint32_t version;   //  i assume, please doublecheck

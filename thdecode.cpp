@@ -139,6 +139,34 @@ unsigned int th09decode(unsigned char **buffer, unsigned int flength) {
 	return dlength;
 }
 
+unsigned int th09decode1(unsigned char **buffer, unsigned int flength) {
+	unsigned char *buf = *buffer;
+	unsigned int i, length;
+	unsigned char base;
+	base = *((unsigned char*) (&buf[0x15]));
+	length = *((unsigned int*) (&buf[0x0c]));
+	for (i = 24; i < length; ++i) {
+		buf[i] -= base;
+		base += 7;
+	}
+
+	return flength;
+}
+
+unsigned int th09decode2(unsigned char **buffer, unsigned int flength) {
+	unsigned char *buf = *buffer;
+	unsigned char *rawdata = &buf[0xc0], *decodedata;
+	unsigned int length, dlength;
+	length = *((unsigned int*) (&buf[0x0c]));
+	dlength = *((unsigned int*) (&buf[0x1c]));
+	decodedata = new unsigned char[dlength];
+	decompress(rawdata, decodedata, length - 0xc0);
+
+	delete[] buf;
+	*buffer = decodedata;
+	return dlength;
+}
+
 unsigned int th10decode(unsigned char **buffer, unsigned int flength) {
 	unsigned char *buf = *buffer;
 	unsigned char *rawdata = &buf[0x24], *decodedata;

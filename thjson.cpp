@@ -58,6 +58,7 @@ int main(int argc, char *argv[]) {
 			break;
 		case 0x50523954: 	//"T9RP"
 			// th09decode(buffer, flength);
+			printf("%s", th09json(buffer, flength));
 			break;
 		case 0x72303174:  //"t10r"
 			// th10decode(buffer, flength);
@@ -526,7 +527,7 @@ char * th08json(unsigned char *buffer, unsigned int flength) {
 			writer.StartObject();
 			writer.Key("stage");
 			writer.Uint(i + 1);
-			
+
 			th08_replay_stage_t *stage = (th08_replay_stage_t*)&buffer[header->stage_offsets[i]];
 
 			writer.Key("score");
@@ -570,5 +571,173 @@ char * th08json(unsigned char *buffer, unsigned int flength) {
 	json[jsonsize] = '\0';
 	return json;
 
+
+}
+
+char * th09json(unsigned char *buffer, unsigned int flength) {
+	using namespace rapidjson;
+	StringBuffer s;
+	Writer<StringBuffer> writer(s);
+
+	writer.StartObject();
+	writer.Key("gameid");
+	writer.Int(3);
+
+	th09_replay_header_t *header = (th09_replay_header_t*)buffer;
+	
+	unsigned char **buf = &buffer;
+	flength = th09decode1(buf, flength);
+	buffer = *buf;
+
+	header = (th09_replay_header_t*)malloc(sizeof(th09_replay_header_t));
+	memcpy(header, buffer, sizeof(th09_replay_header_t));
+	for(int i = 0; i < 40; i++) {
+		if(header->stage_offsets[i] != 0) {
+			header->stage_offsets[i] -= 192;
+		}
+	}
+
+	flength = th09decode2(buf, flength);
+	buffer = *buf;
+
+	th09_replay_t *stage_header = (th09_replay_t*)buffer;
+	
+	const char *shots[16] = {
+		"Reimu",
+		"Marisa",
+		"Sakuya",
+		"Youmu",
+		"Reisen",
+		"Cirno",
+		"Lyrica",
+		"Mystia",
+		"Tewi",
+		"Aya",
+		"Medicine",
+		"Yuuka",
+		"Komachi",
+		"Eiki",
+		"Merlin",
+		"Lunasa"
+	};
+
+	writer.Key("difficulty");
+	writer.Uint(stage_header->difficulty);
+
+	char date[11] = "2000-01-01";
+	memcpy(date+2, stage_header->date, 2);
+	memcpy(date+5, &stage_header->date[3], 2);
+	memcpy(date+8, &stage_header->date[6], 2);
+	writer.Key("date");
+	writer.String(date);
+
+	writer.Key("name");
+	if(stage_header->name[8] != '\0') stage_header->name[8] = '\0';
+	writer.String(stage_header->name);
+
+	writer.Key("stage");
+	writer.StartArray();
+
+	if(header->stage_offsets[9] == 0) {
+		//	story mode
+		for(int i = 0; i < 9; i++) {
+			if(header->stage_offsets[i] != 0x00) {
+				writer.StartObject();
+				writer.Key("stage");
+				writer.Uint(i + 1);
+
+				th09_replay_stage_t *stage = (th09_replay_stage_t*)&buffer[header->stage_offsets[i]];
+				th09_replay_stage_t *stage_ai = (th09_replay_stage_t*)&buffer[header->stage_offsets[i + 10]];
+
+				writer.Key("player");
+				writer.StartObject();
+
+				writer.Key("score");
+				writer.Uint64((uint64_t)stage->score * 10);
+
+				writer.Key("shot");
+				if(stage->shot < 16) {
+					writer.String(shots[stage->shot]);
+				} else {
+					writer.String("Unknown");
+				}
+
+				writer.Key("lives");
+				writer.Uint(stage->lives);
+				writer.EndObject();
+
+				writer.Key("cpu");
+				writer.StartObject();
+
+				writer.Key("score");
+				writer.Uint64((uint64_t)stage_ai->score * 10);
+
+				writer.Key("shot");
+				if(stage_ai->shot < 16) {
+					writer.String(shots[stage_ai->shot]);
+				} else {
+					writer.String("Unknown");
+				}
+
+				writer.Key("lives");
+				writer.Uint(stage_ai->lives);
+
+				writer.EndObject();
+				writer.EndObject();
+			}
+		}
+	} else {
+		//	vs replay
+		writer.Key("stage");
+		writer.Int(1);
+
+		th09_replay_stage_t *player1 = (th09_replay_stage_t*)&buffer[header->stage_offsets[9]];
+		th09_replay_stage_t *player2 = (th09_replay_stage_t*)&buffer[header->stage_offsets[19]];
+	
+		writer.Key("player1");
+		writer.StartObject();
+
+		writer.Key("cpu");
+		writer.Bool(player1->ai);
+
+		writer.Key("shot");
+		if(player1->shot < 16) {
+			writer.String(shots[player1->shot]);
+		} else {
+			writer.String("Unknown");
+		}
+
+		writer.Key("score");
+		writer.Uint64((uint64_t)player1->score * 10);
+		writer.EndObject();
+
+		writer.Key("player2");
+		writer.StartObject();
+
+		writer.Key("cpu");
+		writer.Bool(player2->ai);
+
+		writer.Key("shot");
+		if(player2->shot < 16) {
+			writer.String(shots[player2->shot]);
+		} else {
+			writer.String("Unknown");
+		}
+
+		writer.Key("score");
+		writer.Uint64((uint64_t)player2->score * 10);
+		writer.EndObject();
+	}
+
+	writer.EndArray();
+	writer.EndObject();
+
+	free(header);
+
+	int jsonsize = s.GetSize();
+	char *json = new char[jsonsize+1];
+	memcpy(json, s.GetString(), jsonsize+1);
+	json[jsonsize] = '\0';
+	return json;	
 
 }
