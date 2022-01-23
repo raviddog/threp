@@ -42,27 +42,36 @@ int main(int argc, char *argv[]) {
 	fclose(fp);
 
 	int magic = *(int*) buffer;
+	unsigned char **buf = &buffer;
+
+	const char *out = "not supported format\n";
+	bool e = false;
 
 	switch(magic) {
 		case 0x50523654:  //"T6RP"
 			// th06decode(buffer, flength);
-			printf("%s", th06json(buffer, flength));
+			out = th06json(buf, flength);
+			e = true;
 			break;
 		case 0x50523754:  //"T7RP"
 			// th07decode(buffer, flength);
-			printf("%s", th07json(buffer, flength));
+			out = th07json(buf, flength);
+			e = true;
 			break;
 		case 0x50523854:  //"T8RP"
 			// th08decode(buffer, flength);
-			printf("%s", th08json(buffer, flength));
+			out = th08json(buf, flength);
+			e = true;
 			break;
 		case 0x50523954: 	//"T9RP"
 			// th09decode(buffer, flength);
-			printf("%s", th09json(buffer, flength));
+			out = th09json(buf, flength);
+			e = true;
 			break;
 		case 0x72303174:  //"t10r"
 			// th10decode(buffer, flength);
-			printf("%s", th10json(buffer, flength));
+			out = th10json(buf, flength);
+			e = true;
 			break;
 		case 0x72313174:  //"t11r"
 			// th11decode(buffer, flength);
@@ -92,18 +101,22 @@ int main(int argc, char *argv[]) {
 			// th13decode(buffer, flength);
 			break;
 		default:
-			printf("not supported format.\n");
 			break;
 	}
+
+	printf("%s", out);
+	if(e) delete[] out;
 	
 	delete[] buffer;
 	return 0;
 }
 
-char * th06json(unsigned char *buffer, unsigned int flength) {
+char * th06json(unsigned char **buf, unsigned int flength) {
 	using namespace rapidjson;
 	StringBuffer s;
 	Writer<StringBuffer> writer(s);
+
+	unsigned char *buffer = *buf;
 
 	writer.StartObject();
 	writer.Key("gameid");
@@ -137,7 +150,6 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 	writer.Uint(header->difficulty);
 
 	//	now decode the replay
-	unsigned char **buf = &buffer;
 	flength = th06decode(buf, flength);
 	buffer = *buf;
 
@@ -204,10 +216,12 @@ char * th06json(unsigned char *buffer, unsigned int flength) {
 	return json;
 }
 
-char * th07json(unsigned char *buffer, unsigned int flength) {
+char * th07json(unsigned char **buf, unsigned int flength) {
 	using namespace rapidjson;
 	StringBuffer s;
 	Writer<StringBuffer> writer(s);
+
+	unsigned char *buffer = *buf;
 
 	writer.StartObject();
 	writer.Key("gameid");
@@ -220,7 +234,6 @@ char * th07json(unsigned char *buffer, unsigned int flength) {
 	snprintf(ver, 5, "%.2hhx%.2hhx", header->version[0], header->version[1]);
 	writer.String(ver);
 
-	unsigned char **buf = &buffer;
 	flength = th07decode1(buf, flength);
 	buffer = *buf;
 
@@ -331,10 +344,12 @@ char * th07json(unsigned char *buffer, unsigned int flength) {
 	return json;
 }
 
-char * th08json(unsigned char *buffer, unsigned int flength) {
+char * th08json(unsigned char **buf, unsigned int flength) {
 	using namespace rapidjson;
 	StringBuffer s;
 	Writer<StringBuffer> writer(s);
+
+	unsigned char *buffer = *buf;
 
 	writer.StartObject();
 	writer.Key("gameid");
@@ -468,7 +483,6 @@ char * th08json(unsigned char *buffer, unsigned int flength) {
 	}
 
 
-	unsigned char **buf = &buffer;
 	flength = th08decode1(buf, flength);
 	buffer = *buf;
 	
@@ -575,10 +589,12 @@ char * th08json(unsigned char *buffer, unsigned int flength) {
 
 }
 
-char * th09json(unsigned char *buffer, unsigned int flength) {
+char * th09json(unsigned char **buf, unsigned int flength) {
 	using namespace rapidjson;
 	StringBuffer s;
 	Writer<StringBuffer> writer(s);
+
+	unsigned char *buffer = *buf;
 
 	writer.StartObject();
 	writer.Key("gameid");
@@ -660,7 +676,6 @@ char * th09json(unsigned char *buffer, unsigned int flength) {
 	}
 
 	
-	unsigned char **buf = &buffer;
 	flength = th09decode1(buf, flength);
 	buffer = *buf;
 
@@ -817,10 +832,12 @@ char * th09json(unsigned char *buffer, unsigned int flength) {
 
 }
 
-char * th10json(unsigned char *buffer, unsigned int flength) {
+char * th10json(unsigned char **buf, unsigned int flength) {
 	using namespace rapidjson;
 	StringBuffer s;
 	Writer<StringBuffer> writer(s);
+
+	unsigned char *buffer = *buf;
 
 	writer.StartObject();
 	writer.Key("gameid");
@@ -926,7 +943,6 @@ char * th10json(unsigned char *buffer, unsigned int flength) {
 		}
 	}
 	
-	unsigned char **buf = &buffer;
 	flength = th10decode(buf, flength);
 	buffer = *buf;
 
