@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
 			break;
 		case 0x72303174:  //"t10r"
 			// th10decode(buffer, flength);
+			printf("%s", th10json(buffer, flength));
 			break;
 		case 0x72313174:  //"t11r"
 			// th11decode(buffer, flength);
@@ -813,5 +814,128 @@ char * th09json(unsigned char *buffer, unsigned int flength) {
 	memcpy(json, s.GetString(), jsonsize+1);
 	json[jsonsize] = '\0';
 	return json;	
+
+}
+
+char * th10json(unsigned char *buffer, unsigned int flength) {
+	using namespace rapidjson;
+	StringBuffer s;
+	Writer<StringBuffer> writer(s);
+
+	writer.StartObject();
+	writer.Key("gameid");
+	writer.Int(5);
+
+	th10_replay_header_t *header = (th10_replay_header_t*)buffer;
+	uint32_t user_offset = header->comp_size;
+	if(user_offset + 8 < flength) {
+		uint32_t magic = *(uint32_t*)&buffer[user_offset];
+		if(magic == 0x52455355) {
+			uint32_t user_length = *(uint32_t*)&buffer[user_offset + 4];
+			if(user_offset + user_length <= flength) {
+				writer.Key("user");
+				writer.StartObject();
+
+				user_offset += 4;
+				int l = 0;
+
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				//SJIS, 東方XYZ リプレイファイル情報, Touhou XYZ replay file info
+				// if(user_offset + l <= flength) {
+				// 	buffer[user_offset + l] = '\0';
+				// 	writer.Key("name");
+				// 	writer.String((const char*)&buffer[user_offset], l);
+				// }
+
+				user_offset += 2 + l;
+				l = 0;
+
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				if(user_offset + l <= flength) {
+					buffer[user_offset + l] = '\0';
+					writer.Key("version");
+					writer.String((const char*)&buffer[user_offset], l);
+				}
+
+				user_offset += 7 + l;
+				l = 0;
+
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				if(user_offset + l <= flength) {
+					buffer[user_offset + l] = '\0';
+					writer.Key("name");
+					writer.String((const char*)&buffer[user_offset], l);
+				}
+
+				user_offset += 7 + l;
+				l = 0;
+
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				if(user_offset + l <= flength) {
+					buffer[user_offset + l] = '\0';
+					writer.Key("date");
+					writer.String((const char*)&buffer[user_offset], l);
+				}
+
+				user_offset += 8 + l;
+				l = 0;
+
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				if(user_offset + l <= flength) {
+					buffer[user_offset + l] = '\0';
+					writer.Key("shot");
+					writer.String((const char*)&buffer[user_offset], l);
+				}
+
+				user_offset += 7 + l;
+				l = 0;
+
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				if(user_offset + l <= flength) {
+					buffer[user_offset + l] = '\0';
+					writer.Key("difficulty");
+					writer.String((const char*)&buffer[user_offset], l);
+				}
+
+				user_offset += 2 + l;
+				l = 0;
+
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				if(user_offset + l <= flength) {
+					buffer[user_offset + l] = '\0';
+					writer.Key("stage");
+					writer.String((const char*)&buffer[user_offset], l);
+				}
+
+				user_offset += 8 + l;
+				l = 0;
+
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				if(user_offset + l <= flength) {
+					char *score = new char[l + 2];
+					memcpy(score, &buffer[user_offset], l);
+					score[l] = '0';
+					score[l + 1] = '\0';
+					writer.Key("score");
+					writer.String(score);
+					delete[] score;
+				}
+
+				writer.EndObject();
+			}
+		}
+	}
+	
+	unsigned char **buf = &buffer;
+	flength = th10decode(buf, flength);
+	buffer = *buf;
+
+	writer.EndObject();
+
+	int jsonsize = s.GetSize();
+	char *json = new char[jsonsize+1];
+	memcpy(json, s.GetString(), jsonsize+1);
+	json[jsonsize] = '\0';
+	return json;
 
 }
