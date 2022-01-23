@@ -584,6 +584,80 @@ char * th09json(unsigned char *buffer, unsigned int flength) {
 	writer.Int(3);
 
 	th09_replay_header_t *header = (th09_replay_header_t*)buffer;
+	uint32_t user_offset = header->comp_size;
+	if(user_offset + 8 < flength) {
+		uint32_t magic = *(uint32_t*)&buffer[user_offset];
+		if(magic == 0x52455355) {
+			uint32_t user_length = *(uint32_t*)&buffer[user_offset + 4];
+			if(user_offset + user_length <= flength) {
+				writer.Key("user");
+				writer.StartObject();
+
+				user_offset += 25;
+				int l = 0;
+
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				if(user_offset + l <= flength) {
+					buffer[user_offset + l] = '\0';
+					writer.Key("name");
+					writer.String((const char*)&buffer[user_offset], l);
+				}
+
+				user_offset += 13 + l;
+				l = 0;
+
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				if(user_offset + l <= flength) {
+					buffer[user_offset + l] = '\0';
+					writer.Key("date");
+					writer.String((const char*)&buffer[user_offset], l);
+				}
+
+				user_offset += 10 + l;
+				l = 0;
+
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				if(user_offset + l <= flength) {
+					buffer[user_offset + l] = '\0';
+					writer.Key("difficulty");
+					writer.String((const char*)&buffer[user_offset], l);
+				}
+
+				user_offset += 10 + l;
+				l = 0;
+
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				if(user_offset + l <= flength) {
+					buffer[user_offset + l] = '\0';
+					writer.Key("stage");
+					writer.String((const char*)&buffer[user_offset], l);
+				}
+
+				user_offset += 30 + l;
+				l = 0;
+
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				if(user_offset + l <= flength) {
+					buffer[user_offset + l] = '\0';
+					writer.Key("handicap");
+					writer.String((const char*)&buffer[user_offset], l);
+				}
+
+				user_offset += 21 + l;
+				l = 0;
+
+				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
+				if(user_offset + l <= flength) {
+					buffer[user_offset + l] = '\0';
+					writer.Key("version");
+					writer.String((const char*)&buffer[user_offset], l);
+				}
+
+				writer.EndObject();
+			}
+		}
+	}
+
 	
 	unsigned char **buf = &buffer;
 	flength = th09decode1(buf, flength);
