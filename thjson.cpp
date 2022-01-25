@@ -945,7 +945,37 @@ char * th10json(unsigned char **buf, unsigned int flength) {
 	
 	flength = th10decode(buf, flength);
 	buffer = *buf;
-
+	
+	writer.Key("stage");
+	writer.StartArray();
+	
+	uint32_t stagecount = buffer[0x4c];
+	uint32_t next_stage_offset = 0x64;
+	for(unsigned int i = 0; i < stagecount; i++) {
+	    th10_replay_stage_t *stage = (th10_replay_stage_t*)&buffer[next_stage_offset];
+	    
+	    writer.StartObject();
+	    writer.Key("stage");
+	    writer.Uint(stage->stage);
+	    
+	    writer.Key("score");
+	    writer.Uint((uint64_t)stage->score * 10);
+	    
+	    writer.Key("power");
+	    writer.Uint(stage->power);
+	    
+	    writer.Key("piv");
+	    writer.Uint(stage->piv);
+	    
+	    writer.Key("lives");
+	    writer.Uint(stage->lives);
+	    
+	    next_stage_offset += stage->next_stage_offset + 0x1c4;
+	    writer.EndObject();
+	    
+	}
+	
+	writer.EndArray();
 	writer.EndObject();
 
 	int jsonsize = s.GetSize();
