@@ -167,10 +167,13 @@ struct th10_replay_t {
     uint32_t score;
     char unknown2[52];
     float slowdown;
-    uint32_t unknown3;
+    uint8_t stagecount; //  its probs a full int but i dont care
+    char pad[3];
     uint32_t unknown4;
     uint32_t shot;
     uint32_t difficulty;
+    uint32_t unknown5;
+    uint32_t unknown6;
 };
 
 //  first stage offset is at 0x64 of the decoded data
@@ -193,8 +196,20 @@ struct th10_replay_stage_t {
     //  stage offset 0x70, stage count 0x58
 #define th11_replay_header_t th10_replay_header_t
 
+struct th11_replay_t {
+    char name[12];  //  4 nulls at end
+    uint64_t time;  //  its a 32-bit time_t value but there's no standard definition for that
+    uint32_t score;
+    char unknown2[64];
+    uint32_t stagecount;
+    uint32_t unknown3;
+    uint32_t shot;
+    uint32_t difficulty;
+};
+
 struct th11_replay_stage_t {
-    uint32_t stage;
+    uint16_t stage;
+    uint16_t unknown;
     uint32_t ignore;    //  either seed or header length
     uint32_t next_stage_offset; // + 0x90
     uint32_t score;
@@ -210,7 +225,8 @@ struct th11_replay_stage_t {
 #define th12_replay_header_t th10_replay_header_t
 
 struct th12_replay_stage_t {
-    uint32_t stage;
+    uint16_t stage;
+    uint16_t unknown;
     uint32_t ignore;    //  either seed or header length
     uint32_t next_stage_offset; // + 0xa0
     uint32_t score;
