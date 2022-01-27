@@ -161,12 +161,25 @@ struct th10_replay_header_t {
     //  compressed data begins at offset 36
 };
 
+struct th10_replay_t {
+    char name[12];  //  4 nulls at end
+    uint32_t time;  //  its a 32-bit time_t value but there's no standard definition for that
+    uint32_t score;
+    char unknown2[52];
+    float slowdown;
+    uint32_t unknown3;
+    uint32_t unknown4;
+    uint32_t shot;
+    uint32_t difficulty;
+};
+
 //  first stage offset is at 0x64 of the decoded data
 //  number of stage sections is at 0x4c
 
 struct th10_replay_stage_t {
-    uint32_t stage;
-    uint32_t ignore;    //  either seed or header length
+    uint16_t stage;
+    uint16_t ignore3;
+    uint32_t ignore;
     uint32_t next_stage_offset; // add to current stage offset, + current stage header length which is 0x1c4
     uint32_t score;
     uint32_t power;

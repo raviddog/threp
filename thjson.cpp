@@ -945,6 +945,41 @@ char * th10json(unsigned char **buf, unsigned int flength) {
 	
 	flength = th10decode(buf, flength);
 	buffer = *buf;
+
+	th10_replay_t *replay = (th10_replay_t*)buffer;
+
+	const char *shots[] = {
+		"ReimuA",
+		"ReimuB",
+		"ReimuC",
+		"MarisaA",
+		"MarisaB",
+		"MarisaC"
+	};
+
+	writer.Key("name")	;
+	writer.String(replay->name);
+
+	writer.Key("timestamp");
+	writer.Uint(replay->time);
+
+	writer.Key("slowdown");
+	char val[6];
+	snprintf(val, 6, "%5f", replay->slowdown);
+	writer.String(val);
+
+	writer.Key("score");
+	writer.Uint64((uint64_t)replay->score * 10);
+
+	writer.Key("shot");
+	if(replay->shot < 6) {
+		writer.String(shots[replay->shot]);
+	} else {
+		writer.String("Unknown %d", replay->shot);
+	}
+
+	writer.Key("difficulty");
+	writer.Uint(replay->difficulty);
 	
 	writer.Key("stage");
 	writer.StartArray();
@@ -962,7 +997,10 @@ char * th10json(unsigned char **buf, unsigned int flength) {
 	    writer.Uint((uint64_t)stage->score * 10);
 	    
 	    writer.Key("power");
-	    writer.Uint(stage->power);
+		char power[5];
+		snprintf(power, 5, "%4f", stage->power * 0.05);
+		writer.String(power);
+	    // writer.Uint(stage->power);
 	    
 	    writer.Key("piv");
 	    writer.Uint(stage->piv);
