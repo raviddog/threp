@@ -316,9 +316,14 @@ struct th13_replay_stage_t {
     uint32_t spellcard_real_times[21];
 };
 
-struct th14_stage_global_t {
-    uint32_t stage_num;
+struct th14_replay_stage_t {
+    uint16_t stage_num;
+    uint16_t rng;
+    uint32_t frame_count;
+    uint32_t end_off;
+    uint32_t pos_subpixel[2];
     uint32_t _stage_num;
+    uint32_t __stage_num;
     uint32_t score;
     uint32_t difficulty;
     uint32_t continues;
@@ -343,15 +348,6 @@ struct th14_stage_global_t {
     uint32_t field_5C;
     float last_item_collected_pos[3];
     uint32_t poc_count;
-};
-
-struct th14_replay_stage_t {
-    uint16_t stage_num;
-    uint16_t rng;
-    uint32_t frame_count;
-    uint32_t end_off;
-    uint32_t pos_subpixel[2];
-    th14_stage_global_t stagedata;
     uint32_t player_is_focused;
     uint32_t spellcard_real_times[21];
 };
@@ -371,6 +367,28 @@ struct th14_replay_t {
     uint32_t spell_practice_id;
 };
 
+// This struct is not complete, and it doesn't need to be
+// because nobody ever gets the sizeof of it
+struct th143_replay_t {
+    char name[20];
+    uint64_t timestamp;
+    uint32_t score;
+    uint32_t field_20[23];
+    float slowdown;
+    uint32_t field_80;
+    uint32_t field_84;
+    uint32_t day;
+    uint32_t scene;
+    uint32_t field_90;
+    uint32_t primary_item;
+    uint32_t secondary_item;
+    uint32_t field_9C;
+    uint32_t primary_item_uses;
+    uint32_t iframes;
+    uint16_t scene_num;
+    uint16_t rng;
+};
+
 struct th15_replay_t {
     char name[12];
     uint64_t timestamp;
@@ -386,7 +404,13 @@ struct th15_replay_t {
     uint32_t spell_practice_id;
 };
 
-struct th15_stage_global_t {
+struct th15_replay_stage_t
+{
+    uint16_t stage;
+    uint16_t rng;
+    int frame_count;
+    int end_off;
+    int pos_subpixel[2];
     uint32_t stage_num;
     uint32_t _stage_num;
     uint32_t chapter;
@@ -430,21 +454,16 @@ struct th15_stage_global_t {
     uint32_t __pd_resets_total;
     uint32_t __pd_resets_stage[8];
     uint32_t __pd_resets_chapter;
-};
-
-struct th15_replay_stage_t
-{
-    uint16_t stage;
-    uint16_t rng;
-    int frame_count;
-    int end_off;
-    int pos_subpixel[2];
-    th15_stage_global_t stagedata;
     int player_is_focused;
     int spellcard_real_times[21];
 };
 
-struct th16_stage_global_t {
+struct th16_replay_stage_t {
+    uint16_t stage;
+    uint16_t rng_state;
+    uint32_t frame_count;
+    uint32_t end_off;
+    uint32_t pos_subpixel[2];
     uint32_t stage_num;
     uint32_t _stage_num;
     uint32_t chapter;
@@ -499,15 +518,6 @@ struct th16_stage_global_t {
     float last_item_collected_pos[3];
     uint32_t th14_item_spawn_count;
     uint8_t field_F0[308];
-};
-
-struct th16_replay_stage_t {
-    uint16_t stage;
-    uint16_t rng_state;
-    uint32_t frame_count;
-    uint32_t end_off;
-    uint32_t pos_subpixel[2];
-    th16_stage_global_t stagedata;
     uint32_t field_238;
     uint32_t field_23C;
     uint32_t spellcard_real_times[21];
@@ -527,6 +537,19 @@ struct th16_replay_t {
     uint32_t field_94;
     int32_t spell_practice_id;
     uint32_t subseason;
+};
+
+// This struct is not complete, and it doesn't need to be
+// because nobody ever gets the sizeof of it
+struct th165_replay_t {
+    char name[20];
+    uint64_t timestamp;
+    uint32_t score;
+    uint32_t field_20[25];
+    float slowdown;
+    uint32_t field_88;
+    uint32_t day;
+    uint32_t scene;
 };
 
 struct th17_stage_global_t {
