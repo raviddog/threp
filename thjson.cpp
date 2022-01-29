@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
 			break;
 	}
 
-	printf("%s", out);
+	printf("%s\n", out);
 	if(e) delete[] out;
 	
 	delete[] buffer;
