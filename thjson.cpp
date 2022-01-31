@@ -9,12 +9,18 @@
 */
 
 #include "common.h"
+#include "th13.h"
 #include "thdecode.h"
 #include "thjson.h"
+#include "th_modern.h"
 #include "zuntypes.h"
 
+
 #include <cstdio>
-#include <iostream>
+// #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <kaitai/kaitaistream.h>
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
@@ -50,33 +56,33 @@ int main(int argc, char *argv[]) {
 	switch(magic) {
 		case 0x50523654:  //"T6RP"
 			// th06decode(buffer, flength);
-			out = th06json(buf, flength);
-			e = true;
+			// out = th06json(buf, flength);
+			// e = true;
 			break;
 		case 0x50523754:  //"T7RP"
 			// th07decode(buffer, flength);
-			out = th07json(buf, flength);
-			e = true;
+			// out = th07json(buf, flength);
+			// e = true;
 			break;
 		case 0x50523854:  //"T8RP"
 			// th08decode(buffer, flength);
-			out = th08json(buf, flength);
-			e = true;
+			// out = th08json(buf, flength);
+			// e = true;
 			break;
 		case 0x50523954: 	//"T9RP"
 			// th09decode(buffer, flength);
-			out = th09json(buf, flength);
-			e = true;
+			// out = th09json(buf, flength);
+			// e = true;
 			break;
 		case 0x72303174:  //"t10r"
 			// th10decode(buffer, flength);
-			out = th10json(buf, flength);
-			e = true;
+			// out = th10json(buf, flength);
+			// e = true;
 			break;
 		case 0x72313174:  //"t11r"
 			// th11decode(buffer, flength);
-			out = th11json(buf, flength);
-			e = true;
+			// out = th11json(buf, flength);
+			// e = true;
 			break;
 		case 0x72323174:  //"t12r"
 			// th12decode(buffer, flength);
@@ -89,17 +95,8 @@ int main(int argc, char *argv[]) {
 			break;
 		case 0x72333174:  //"t13r"
 			// th13decode(buffer, flength);
-			{
-				th13_replay_header_t *header = (th13_replay_header_t*)buffer;
-				unsigned char id = buffer[header->userdata_offset + 0x10];
-				if(id == 144) {
-					out = th13json(buf, flength);
-					e = true;
-				} else {
-					out = th14json(buf, flength);
-					e = true;
-				}
-			}
+			//	this function should just handle both th13 and th14, saves weirdness and multiparsing
+			th13_14json(buf, flength);
 			break;
 		case 0x72353174: 	//"t15r"
 			// th13decode(buffer, flength);
@@ -1232,7 +1229,7 @@ char * th11json(unsigned char **buf, unsigned int flength) {
 	return json;
 }
 
-char * th13json(unsigned char **buf, unsigned int flength) {
+char * th13_14json(unsigned char **buf, unsigned int flength) {
 	using namespace rapidjson;
 	StringBuffer s;
 	Writer<StringBuffer> writer(s);
@@ -1243,110 +1240,46 @@ char * th13json(unsigned char **buf, unsigned int flength) {
 	writer.Key("gameid");
 	writer.Int(10);
 
-	th13_replay_header_t *header = (th13_replay_header_t*)buffer;
-	uint32_t user_offset = header->userdata_offset;
-	if(user_offset + 8 < flength) {
-		uint32_t magic = *(uint32_t*)&buffer[user_offset];
-		if(magic == 0x52455355) {
-			uint32_t user_length = *(uint32_t*)&buffer[user_offset + 4];
-			if(user_offset + user_length <= flength) {
-				writer.Key("user");
-				writer.StartObject();
+	std::stringstream ss;
+	ss << buffer;
+	kaitai::kstream ks(&ss);
+	th_modern_t replay(&ks);
 
-				user_offset += 4;
-				int l = 0;
+	writer.Key("user");
+	writer.StartObject();
 
-				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
-				//SJIS, 東方XYZ リプレイファイル情報, Touhou XYZ replay file info
-				// if(user_offset + l <= flength) {
-				// 	buffer[user_offset + l] = '\0';
-				// 	writer.Key("name");
-				// 	writer.String((const char*)&buffer[user_offset], l);
-				// }
+	writer.Key("version");
+	writer.String(replay.userdata()->user_ver()->value().c_str());
 
-				user_offset += 2 + l;
-				l = 0;
+	writer.Key("name");
+	writer.String(replay.userdata()->name()->value().c_str());
 
-				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
-				if(user_offset + l <= flength) {
-					buffer[user_offset + l] = '\0';
-					writer.Key("version");
-					writer.String((const char*)&buffer[user_offset], l);
-				}
+	writer.Key("date");
+	writer.String(replay.userdata()->date()->value().c_str());
 
-				user_offset += 7 + l;
-				l = 0;
+	writer.Key("shot");
+	writer.String(replay.userdata()->shot()->value().c_str());
 
-				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
-				if(user_offset + l <= flength) {
-					buffer[user_offset + l] = '\0';
-					writer.Key("name");
-					writer.String((const char*)&buffer[user_offset], l);
-				}
+	writer.Key("difficulty");
+	writer.String(replay.userdata()->difficulty()->value().c_str());
 
-				user_offset += 7 + l;
-				l = 0;
+	writer.Key("stage");
+	writer.String(replay.userdata()->stage()->value().c_str());
+	
+	auto score = replay.userdata()->score()->value();
+	score += "0";
+	writer.Key("score");
+	writer.String(score.c_str());
 
-				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
-				if(user_offset + l <= flength) {
-					buffer[user_offset + l] = '\0';
-					writer.Key("date");
-					writer.String((const char*)&buffer[user_offset], l);
-				}
-
-				user_offset += 8 + l;
-				l = 0;
-
-				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
-				if(user_offset + l <= flength) {
-					buffer[user_offset + l] = '\0';
-					writer.Key("shot");
-					writer.String((const char*)&buffer[user_offset], l);
-				}
-
-				user_offset += 7 + l;
-				l = 0;
-
-				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
-				if(user_offset + l <= flength) {
-					buffer[user_offset + l] = '\0';
-					writer.Key("difficulty");
-					writer.String((const char*)&buffer[user_offset], l);
-				}
-
-				user_offset += 2 + l;
-				l = 0;
-
-				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
-				if(user_offset + l <= flength) {
-					buffer[user_offset + l] = '\0';
-					writer.Key("stage");
-					writer.String((const char*)&buffer[user_offset], l);
-				}
-
-				user_offset += 8 + l;
-				l = 0;
-
-				for(uint16_t crlf = *(uint16_t*)&buffer[user_offset + l]; crlf!=0x0a0d && user_offset + l <= flength;crlf = *(uint16_t*)&buffer[user_offset + ++l]);
-				if(user_offset + l <= flength) {
-					char *score = new char[l + 2];
-					memcpy(score, &buffer[user_offset], l);
-					score[l] = '0';
-					score[l + 1] = '\0';
-					writer.Key("score");
-					writer.String(score);
-					delete[] score;
-				}
-
-				writer.EndObject();
-			}
-		}
-	}
-
+	writer.EndObject();
+	
 	flength = th13decode(buf, flength);
 	buffer = *buf;
 
-	th13_replay_t *replay = (th13_replay_t*)buffer;
+	std::stringstream ss2;
+	ss2 << buffer;
+	kaitai::kstream ks2(&ss2);
+	th13_t th13(&ks2);
 
 	const char *shots[] = {
 		"Reimu",
@@ -1356,68 +1289,64 @@ char * th13json(unsigned char **buf, unsigned int flength) {
 	};
 
 	writer.Key("name");
-	writer.String(replay->name);
+	writer.String(th13.header()->name().c_str());
 
 	writer.Key("timestamp");
-	writer.Uint64(replay->timestamp);
+	writer.Uint64(th13.header()->timestamp());
 
 	writer.Key("slowdown");
 	char val[6];
-	snprintf(val, 6, "%5f", replay->slowdown);
+	snprintf(val, 6, "%5f", th13.header()->slowdown());
 	writer.String(val);
 
 	writer.Key("score");
-	writer.Uint64((uint64_t)replay->score * 10);
+	writer.Uint64((uint64_t)th13.header()->score() * 10);
 
 	writer.Key("shot");
-	if(replay->shot < 4) {
-		writer.String(shots[replay->shot]);
+	if(th13.header()->shot() < 4) {
+		writer.String(shots[th13.header()->shot()]);
 	} else {
-		writer.String("Unknown %d", replay->shot);
+		writer.String("Unknown %d %d", th13.header()->shot(), th13.header()->subshot_unused());
 	}
 
 	writer.Key("difficulty");
-	writer.Uint(replay->difficulty);
+	writer.Uint(th13.header()->difficulty());
 
 	writer.Key("stage");
 	writer.StartArray();
 
-	uint32_t next_stage_offset = 0x74;
-	for(unsigned int i = 0; i < replay->stage_count; i++) {
-		th13_replay_stage_t *stage = (th13_replay_stage_t*)&buffer[next_stage_offset];
-
+	for(unsigned int i = 0; i < th13.header()->stage_count(); i++) {
 		writer.StartObject();
 	    writer.Key("stage");
-	    writer.Uint(stage->stage_num);
+	    writer.Uint(th13.stage()->at(i)->stage_num());
 	    
 	    writer.Key("score");
-	    writer.Uint((uint64_t)stage->score * 10);
+	    writer.Uint((uint64_t)th13.stage()->at(i)->score() * 10);
 	    
 	    writer.Key("power");
 		// char power[5];
 		// snprintf(power, 5, "%4f", stage->power * 0.05);
 		// writer.String(power);
-	    writer.Uint(stage->power);
+	    writer.Uint(th13.stage()->at(i)->power());
 	    
 	    writer.Key("piv");
-	    writer.Uint(stage->piv);
+	    writer.Uint(th13.stage()->at(i)->piv());
 	    
 	    writer.Key("lives");
-	    writer.Uint(stage->lives);
+	    writer.Uint(th13.stage()->at(i)->lives());
 
 		writer.Key("life_pieces");
-		writer.Uint(stage->life_pieces);
+		writer.Uint(th13.stage()->at(i)->life_pieces());
 
 		writer.Key("bombs");
-		writer.Uint(stage->bomb_pieces);
+		writer.Uint(th13.stage()->at(i)->bomb_pieces());
 
 		writer.Key("graze");
-		writer.Uint(stage->graze);
+		writer.Uint(th13.stage()->at(i)->graze());
 
 		writer.Key("trance");
-		writer.Uint(stage->trance_gauge);
+		writer.Uint(th13.stage()->at(i)->trance());
 	    
-	    next_stage_offset += stage->end_off + 0xc4;
 	    writer.EndObject();
 	}
 
