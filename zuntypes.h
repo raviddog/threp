@@ -224,10 +224,24 @@ struct th11_replay_stage_t {
 
 #define th12_replay_header_t th10_replay_header_t
 
+struct th12_replay_t {
+    char name[12];  //  4 nulls at the end
+    uint64_t time;  //  64 bit time_t value but theres no standard representation for that so
+    uint32_t score;
+    char unk[60];
+    float slowdown;
+    uint32_t stagecount;
+    uint32_t shot;
+    uint32_t subshot;
+    uint32_t difficulty;
+    uint32_t cleared;
+    uint32_t unk2;
+};
+
 struct th12_replay_stage_t {
     uint16_t stage;
-    uint16_t unknown;
-    uint32_t ignore;    //  either seed or header length
+    uint16_t rng;
+    uint32_t frame_count;    //  either seed or header length
     uint32_t next_stage_offset; // + 0xa0
     uint32_t score;
     uint32_t power;
@@ -239,8 +253,10 @@ struct th12_replay_stage_t {
     uint32_t ufo_1;
     uint32_t ufo_2;
     uint32_t ufo_3;
-    char ignore2[0x18];
+    char ignore2[24];
     uint32_t graze;
+    uint32_t unk;
+    uint32_t unk2[20];
 };
 
 #define th128_replay_header_t th10_replay_header_t

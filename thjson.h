@@ -7,6 +7,7 @@ char * th08json(unsigned char **buffer, unsigned int flength);
 char * th09json(unsigned char **buffer, unsigned int flength);
 char * th10json(unsigned char **buffer, unsigned int flength);
 char * th11json(unsigned char **buffer, unsigned int flength);
+char * th12json(unsigned char **buffer, unsigned int flength);
 
 char * th13json(unsigned char **buffer, unsigned int flength);
 char * th14json(unsigned char **buffer, unsigned int flength);
