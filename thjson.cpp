@@ -14,7 +14,6 @@
 #include "zuntypes.h"
 
 #include <cstdio>
-#include <iostream>
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
@@ -44,44 +43,36 @@ int main(int argc, char *argv[]) {
 	int magic = *(int*) buffer;
 	unsigned char **buf = &buffer;
 
-	const char *out = "not supported format\n";
-	bool e = false;
+	const char *out = "not supported format";
 
 	switch(magic) {
 		case 0x50523654:  //"T6RP"
 			// th06decode(buffer, flength);
 			out = th06json(buf, flength);
-			e = true;
 			break;
 		case 0x50523754:  //"T7RP"
 			// th07decode(buffer, flength);
 			out = th07json(buf, flength);
-			e = true;
 			break;
 		case 0x50523854:  //"T8RP"
 			// th08decode(buffer, flength);
 			out = th08json(buf, flength);
-			e = true;
 			break;
 		case 0x50523954: 	//"T9RP"
 			// th09decode(buffer, flength);
 			out = th09json(buf, flength);
-			e = true;
 			break;
 		case 0x72303174:  //"t10r"
 			// th10decode(buffer, flength);
 			out = th10json(buf, flength);
-			e = true;
 			break;
 		case 0x72313174:  //"t11r"
 			// th11decode(buffer, flength);
 			out = th11json(buf, flength);
-			e = true;
 			break;
 		case 0x72323174:  //"t12r"
 			// th12decode(buffer, flength);
 			out = th12json(buf, flength);
-			e = true;
 			break;
 		case 0x35323174:  //"t125"
 			// th125decode(buffer, flength);
@@ -92,14 +83,20 @@ int main(int argc, char *argv[]) {
 		case 0x72333174:  //"t13r"
 			// th13decode(buffer, flength);
 			{
-				th13_replay_header_t *header = (th13_replay_header_t*)buffer;
-				unsigned char id = buffer[header->userdata_offset + 0x10];
-				if(id == 144) {
-					out = th13json(buf, flength);
-					e = true;
+				if(flength > sizeof(th13_replay_header_t)) {
+					th13_replay_header_t *header = (th13_replay_header_t*)buffer;
+					if(flength > header->userdata_offset + 0x10) {
+						unsigned char id = buffer[header->userdata_offset + 0x10];
+						if(id == 144) {
+							out = th13json(buf, flength);
+						} else {
+							out = th14json(buf, flength);
+						}
+					} else {
+						out = nullptr;
+					}
 				} else {
-					out = th14json(buf, flength);
-					e = true;
+					out = nullptr;
 				}
 			}
 			break;
@@ -119,8 +116,13 @@ int main(int argc, char *argv[]) {
 			break;
 	}
 
-	printf("%s\n", out);
-	if(e) delete[] out;
+	if(out) {
+		printf("%s\n", out);
+		delete[] out;
+	} else {
+		printf("error reading file\n");
+	}
+
 	
 	delete[] buffer;
 	return 0;
@@ -137,6 +139,7 @@ char * th06json(unsigned char **buf, unsigned int flength) {
 	writer.Key("gameid");
 	writer.Int(0);
 
+	if(flength < sizeof(th06_replay_header_t)) return nullptr;
 	th06_replay_header_t *header = (th06_replay_header_t *)buffer;
 
 	//	version
@@ -168,6 +171,7 @@ char * th06json(unsigned char **buf, unsigned int flength) {
 	flength = th06decode(buf, flength);
 	buffer = *buf;
 
+	if(flength < sizeof(th06_replay_t)) return nullptr;
 	th06_replay_t *rep = (th06_replay_t*)&buffer[0x10];
 
 	//	date, null terminated string
@@ -197,7 +201,7 @@ char * th06json(unsigned char **buf, unsigned int flength) {
 	writer.StartArray();
 
 	for(int i = 0; i < 7; i++) {
-		if(rep->stage_offsets[i] != 0x00) {
+		if(rep->stage_offsets[i] != 0x00 && rep->stage_offsets[i] + sizeof(th06_replay_stage_t) < flength) {
 			th06_replay_stage_t *stage = (th06_replay_stage_t*)&buffer[rep->stage_offsets[i]];
 			writer.StartObject();
 			writer.Key("stage");
@@ -242,6 +246,7 @@ char * th07json(unsigned char **buf, unsigned int flength) {
 	writer.Key("gameid");
 	writer.Int(1);
 
+	if(flength < sizeof(th07_replay_header_t)) return nullptr;
 	th07_replay_header_t *header = (th07_replay_header_t*)buffer;
 
 	writer.Key("version");
@@ -252,7 +257,7 @@ char * th07json(unsigned char **buf, unsigned int flength) {
 	flength = th07decode1(buf, flength);
 	buffer = *buf;
 
-	//	need to save the stage offsets from header, so make a copy of the memory
+	//	need to save the stage offsets from header, so make a copy of the header memory
 	//	also decrement each stage offset by 84 to account for full header size
 	header = (th07_replay_header_t*)malloc(sizeof(th07_replay_header_t));
 	memcpy(header, buffer, sizeof(th07_replay_header_t));
@@ -274,6 +279,10 @@ char * th07json(unsigned char **buf, unsigned int flength) {
 		"SakuyaB"
 	};
 
+	if(flength < sizeof(th07_replay_t)) {
+		free(header);
+		return nullptr;
+	}
 	th07_replay_t *rep = (th07_replay_t*)buffer;
 	
 	writer.Key("shot");
@@ -309,7 +318,7 @@ char * th07json(unsigned char **buf, unsigned int flength) {
 
 	// max_stage++;
 	for(int i = 0; i < 7; i++) {
-		if(header->stage_offsets[i] != 0x00) {
+		if(header->stage_offsets[i] != 0x00 && header->stage_offsets[i] + sizeof(th07_replay_stage_t) < flength) {
 			th07_replay_stage_t *stage = (th07_replay_stage_t*)&buffer[header->stage_offsets[i]];
 
 			writer.StartObject();
@@ -370,6 +379,7 @@ char * th08json(unsigned char **buf, unsigned int flength) {
 	writer.Key("gameid");
 	writer.Int(2);
 	
+	if(flength < sizeof(th08_replay_header_t)) return nullptr;
 	th08_replay_header_t *header = (th08_replay_header_t*)buffer;
 	uint32_t user_offset = header->comp_size;
 	if(user_offset + 8 < flength) {
@@ -512,6 +522,10 @@ char * th08json(unsigned char **buf, unsigned int flength) {
 	flength = th08decode2(buf, flength);
 	buffer = *buf;
 	
+	if(flength < sizeof(th08_replay_t)) {
+		free(header);
+		return nullptr;
+	}
 	th08_replay_t *stage_header = (th08_replay_t*)buffer;
 	
 	const char *shots[12] = {
@@ -553,7 +567,7 @@ char * th08json(unsigned char **buf, unsigned int flength) {
 	writer.StartArray();
 
 	for(int i = 0; i < 9; i++) {
-		if(header->stage_offsets[i] != 0x00) {
+		if(header->stage_offsets[i] != 0x00 && header->stage_offsets[i] + sizeof(th08_replay_stage_t) < flength) {
 			writer.StartObject();
 			writer.Key("stage");
 			writer.Uint(i + 1);
@@ -615,6 +629,7 @@ char * th09json(unsigned char **buf, unsigned int flength) {
 	writer.Key("gameid");
 	writer.Int(3);
 
+	if(flength < sizeof(th09_replay_header_t)) return nullptr;
 	th09_replay_header_t *header = (th09_replay_header_t*)buffer;
 	uint32_t user_offset = header->comp_size;
 	if(user_offset + 8 < flength) {
@@ -705,6 +720,10 @@ char * th09json(unsigned char **buf, unsigned int flength) {
 	flength = th09decode2(buf, flength);
 	buffer = *buf;
 
+	if(flength < sizeof(th09_replay_t)) {
+		free(header);
+		return nullptr;
+	}
 	th09_replay_t *stage_header = (th09_replay_t*)buffer;
 	
 	const char *shots[16] = {
@@ -746,7 +765,7 @@ char * th09json(unsigned char **buf, unsigned int flength) {
 	if(header->stage_offsets[9] == 0) {
 		//	story mode
 		for(int i = 0; i < 9; i++) {
-			if(header->stage_offsets[i] != 0x00) {
+			if(header->stage_offsets[i] != 0x00 && header->stage_offsets[i] + sizeof(th09_replay_stage_t) < flength && header->stage_offsets[i + 10] + sizeof(th09_replay_stage_t) < flength) {
 				writer.StartObject();
 				writer.Key("stage");
 				writer.Uint(i + 1);
@@ -793,45 +812,47 @@ char * th09json(unsigned char **buf, unsigned int flength) {
 		}
 	} else {
 		//	vs replay
-		writer.Key("stage");
-		writer.Int(1);
+		if(header->stage_offsets[9] + sizeof(th09_replay_stage_t) < flength && header->stage_offsets[19] + sizeof(th09_replay_stage_t) < flength) {
+			writer.Key("stage");
+			writer.Int(0);
 
-		th09_replay_stage_t *player1 = (th09_replay_stage_t*)&buffer[header->stage_offsets[9]];
-		th09_replay_stage_t *player2 = (th09_replay_stage_t*)&buffer[header->stage_offsets[19]];
-	
-		writer.Key("player1");
-		writer.StartObject();
+			th09_replay_stage_t *player1 = (th09_replay_stage_t*)&buffer[header->stage_offsets[9]];
+			th09_replay_stage_t *player2 = (th09_replay_stage_t*)&buffer[header->stage_offsets[19]];
+		
+			writer.Key("player1");
+			writer.StartObject();
 
-		writer.Key("cpu");
-		writer.Bool(player1->ai);
+			writer.Key("cpu");
+			writer.Bool(player1->ai);
 
-		writer.Key("shot");
-		if(player1->shot < 16) {
-			writer.String(shots[player1->shot]);
-		} else {
-			writer.String("Unknown");
+			writer.Key("shot");
+			if(player1->shot < 16) {
+				writer.String(shots[player1->shot]);
+			} else {
+				writer.String("Unknown");
+			}
+
+			writer.Key("score");
+			writer.Uint64((uint64_t)player1->score * 10);
+			writer.EndObject();
+
+			writer.Key("player2");
+			writer.StartObject();
+
+			writer.Key("cpu");
+			writer.Bool(player2->ai);
+
+			writer.Key("shot");
+			if(player2->shot < 16) {
+				writer.String(shots[player2->shot]);
+			} else {
+				writer.String("Unknown");
+			}
+
+			writer.Key("score");
+			writer.Uint64((uint64_t)player2->score * 10);
+			writer.EndObject();
 		}
-
-		writer.Key("score");
-		writer.Uint64((uint64_t)player1->score * 10);
-		writer.EndObject();
-
-		writer.Key("player2");
-		writer.StartObject();
-
-		writer.Key("cpu");
-		writer.Bool(player2->ai);
-
-		writer.Key("shot");
-		if(player2->shot < 16) {
-			writer.String(shots[player2->shot]);
-		} else {
-			writer.String("Unknown");
-		}
-
-		writer.Key("score");
-		writer.Uint64((uint64_t)player2->score * 10);
-		writer.EndObject();
 	}
 
 	writer.EndArray();
@@ -858,6 +879,7 @@ char * th10json(unsigned char **buf, unsigned int flength) {
 	writer.Key("gameid");
 	writer.Int(5);
 
+	if(flength < sizeof(th10_replay_header_t)) return nullptr;
 	th10_replay_header_t *header = (th10_replay_header_t*)buffer;
 	uint32_t user_offset = header->comp_size;
 	if(user_offset + 8 < flength) {
@@ -961,6 +983,7 @@ char * th10json(unsigned char **buf, unsigned int flength) {
 	flength = th10decode(buf, flength);
 	buffer = *buf;
 
+	if(flength < sizeof(th10_replay_t)) return nullptr;
 	th10_replay_t *replay = (th10_replay_t*)buffer;
 
 	const char *shots[] = {
@@ -1001,30 +1024,35 @@ char * th10json(unsigned char **buf, unsigned int flength) {
 	
 	uint32_t next_stage_offset = 0x64;
 	for(unsigned int i = 0; i < replay->stagecount; i++) {
-	    th10_replay_stage_t *stage = (th10_replay_stage_t*)&buffer[next_stage_offset];
-	    
-	    writer.StartObject();
-	    writer.Key("stage");
-	    writer.Uint(stage->stage);
-	    
-	    writer.Key("score");
-	    writer.Uint((uint64_t)stage->score * 10);
-	    
-	    writer.Key("power");
-		char power[5];
-		snprintf(power, 5, "%4f", stage->power * 0.05);
-		writer.String(power);
-	    // writer.Uint(stage->power);
-	    
-	    writer.Key("piv");
-	    writer.Uint(stage->piv);
-	    
-	    writer.Key("lives");
-	    writer.Uint(stage->lives);
-	    
-	    next_stage_offset += stage->next_stage_offset + 0x1c4;
-	    writer.EndObject();
-	    
+		if(next_stage_offset + sizeof(th10_replay_stage_t) < flength) {
+			th10_replay_stage_t *stage = (th10_replay_stage_t*)&buffer[next_stage_offset];
+			
+			writer.StartObject();
+			writer.Key("stage");
+			writer.Uint(stage->stage);
+			
+			writer.Key("score");
+			writer.Uint((uint64_t)stage->score * 10);
+			
+			writer.Key("power");
+			char power[5];
+			snprintf(power, 5, "%4f", stage->power * 0.05);
+			writer.String(power);
+			// writer.Uint(stage->power);
+			
+			writer.Key("piv");
+			writer.Uint(stage->piv);
+			
+			writer.Key("lives");
+			writer.Uint(stage->lives);
+			
+			next_stage_offset += stage->next_stage_offset + 0x1c4;
+			writer.EndObject();
+
+		} else {
+			//	buffer overflow i guess, just stop
+			i = replay->stagecount;
+		}	    
 	}
 	
 	writer.EndArray();
@@ -1049,6 +1077,7 @@ char * th11json(unsigned char **buf, unsigned int flength) {
 	writer.Key("gameid");
 	writer.Int(6);
 
+	if(flength < sizeof(th11_replay_header_t)) return nullptr;
 	th11_replay_header_t *header = (th11_replay_header_t*)buffer;
 	uint32_t user_offset = header->comp_size;
 	if(user_offset + 8 < flength) {
@@ -1152,6 +1181,7 @@ char * th11json(unsigned char **buf, unsigned int flength) {
 	flength = th11decode(buf, flength);
 	buffer = *buf;
 
+	if(flength < sizeof(th11_replay_t)) return nullptr;
 	th11_replay_t *replay = (th11_replay_t*)buffer;
 
 	const char *shots[] = {
@@ -1192,36 +1222,39 @@ char * th11json(unsigned char **buf, unsigned int flength) {
 	
 	uint32_t next_stage_offset = 0x70;
 	for(unsigned int i = 0; i < replay->stagecount; i++) {
-	    th11_replay_stage_t *stage = (th11_replay_stage_t*)&buffer[next_stage_offset];
-	    
-	    writer.StartObject();
-	    writer.Key("stage");
-	    writer.Uint(stage->stage);
-	    
-	    writer.Key("score");
-	    writer.Uint((uint64_t)stage->score * 10);
-	    
-	    writer.Key("power");
-		char power[5];
-		snprintf(power, 5, "%4f", stage->power * 0.05);
-		writer.String(power);
-	    // writer.Uint(stage->power);
-	    
-	    writer.Key("piv");
-	    writer.Uint(stage->piv);
-	    
-	    writer.Key("lives");
-	    writer.Uint(stage->lives);
+		if(next_stage_offset + sizeof(th11_replay_stage_t) < flength) {
+			th11_replay_stage_t *stage = (th11_replay_stage_t*)&buffer[next_stage_offset];
+			
+			writer.StartObject();
+			writer.Key("stage");
+			writer.Uint(stage->stage);
+			
+			writer.Key("score");
+			writer.Uint((uint64_t)stage->score * 10);
+			
+			writer.Key("power");
+			char power[5];
+			snprintf(power, 5, "%4f", stage->power * 0.05);
+			writer.String(power);
+			// writer.Uint(stage->power);
+			
+			writer.Key("piv");
+			writer.Uint(stage->piv);
+			
+			writer.Key("lives");
+			writer.Uint(stage->lives);
 
-		writer.Key("life_pieces");
-		writer.Uint(stage->life_pieces);
+			writer.Key("life_pieces");
+			writer.Uint(stage->life_pieces);
 
-		writer.Key("graze");
-		writer.Uint(stage->graze);
-	    
-	    next_stage_offset += stage->next_stage_offset + 0x90;
-	    writer.EndObject();
-	    
+			writer.Key("graze");
+			writer.Uint(stage->graze);
+			
+			next_stage_offset += stage->next_stage_offset + 0x90;
+			writer.EndObject();
+		} else {
+			i = replay->stagecount;
+		}	    
 	}
 	
 	writer.EndArray();
@@ -1245,6 +1278,7 @@ char * th12json(unsigned char **buf, unsigned int flength) {
 	writer.Key("gameid");
 	writer.Int(7);
 
+	if(flength < sizeof(th12_replay_header_t)) return nullptr;
 	th12_replay_header_t *header = (th12_replay_header_t*)buffer;
 	uint32_t user_offset = header->comp_size;
 	if(user_offset + 8 < flength) {
@@ -1348,6 +1382,7 @@ char * th12json(unsigned char **buf, unsigned int flength) {
 	flength = th12decode(buf, flength);
 	buffer = *buf;
 
+	if(flength < sizeof(th12_replay_t)) return nullptr;
 	th12_replay_t *replay = (th12_replay_t*)buffer;
 
 	writer.Key("name")	;
@@ -1388,46 +1423,50 @@ char * th12json(unsigned char **buf, unsigned int flength) {
 
 	uint32_t next_stage_offset = 0x70;
 	for(unsigned int i = 0; i < replay->stagecount; i++) {
-		th12_replay_stage_t *stage = (th12_replay_stage_t*)&buffer[next_stage_offset];
+		if(next_stage_offset + sizeof(th128_replay_stage_t) < flength) {
+			th12_replay_stage_t *stage = (th12_replay_stage_t*)&buffer[next_stage_offset];
 
-		writer.StartObject();
-	    writer.Key("stage");
-	    writer.Uint(stage->stage);
-	    
-	    writer.Key("score");
-	    writer.Uint((uint64_t)stage->score * 10);
-	    
-	    writer.Key("power");
-	    writer.Uint(stage->power);
-	    
-	    writer.Key("piv");
-	    writer.Uint(stage->piv);
-	    
-	    writer.Key("lives");
-	    writer.Uint(stage->lives);
+			writer.StartObject();
+			writer.Key("stage");
+			writer.Uint(stage->stage);
+			
+			writer.Key("score");
+			writer.Uint((uint64_t)stage->score * 10);
+			
+			writer.Key("power");
+			writer.Uint(stage->power);
+			
+			writer.Key("piv");
+			writer.Uint(stage->piv);
+			
+			writer.Key("lives");
+			writer.Uint(stage->lives);
 
-		writer.Key("life_pieces");
-		if(stage->life_pieces > 0) stage->life_pieces -= 1;
-		writer.Uint(stage->life_pieces);
+			writer.Key("life_pieces");
+			if(stage->life_pieces > 0) stage->life_pieces -= 1;
+			writer.Uint(stage->life_pieces);
 
-		writer.Key("bombs");
-		writer.Uint(stage->bombs);
+			writer.Key("bombs");
+			writer.Uint(stage->bombs);
 
-		writer.Key("bomb_pieces");
-		writer.Uint(stage->bomb_pieces);
+			writer.Key("bomb_pieces");
+			writer.Uint(stage->bomb_pieces);
 
-		writer.Key("ufos");
-		writer.StartArray();
-		writer.Uint(stage->ufo_1);
-		writer.Uint(stage->ufo_2);
-		writer.Uint(stage->ufo_3);
-		writer.EndArray();
+			writer.Key("ufos");
+			writer.StartArray();
+			writer.Uint(stage->ufo_1);
+			writer.Uint(stage->ufo_2);
+			writer.Uint(stage->ufo_3);
+			writer.EndArray();
 
-		writer.Key("graze");
-		writer.Uint(stage->graze);
-	    
-	    next_stage_offset += stage->next_stage_offset + 0xa0;
-	    writer.EndObject();
+			writer.Key("graze");
+			writer.Uint(stage->graze);
+			
+			next_stage_offset += stage->next_stage_offset + 0xa0;
+			writer.EndObject();
+		} else {
+			i = replay->stagecount;
+		}
 	}
 
 	writer.EndArray();
@@ -1451,6 +1490,7 @@ char * th13json(unsigned char **buf, unsigned int flength) {
 	writer.Key("gameid");
 	writer.Int(10);
 
+	if(flength < sizeof(th13_replay_header_t)) return nullptr;
 	th13_replay_header_t *header = (th13_replay_header_t*)buffer;
 	uint32_t user_offset = header->userdata_offset;
 	if(user_offset + 8 < flength) {
@@ -1554,6 +1594,7 @@ char * th13json(unsigned char **buf, unsigned int flength) {
 	flength = th13decode(buf, flength);
 	buffer = *buf;
 
+	if(flength < sizeof(th13_replay_t)) return nullptr;
 	th13_replay_t *replay = (th13_replay_t*)buffer;
 
 	const char *shots[] = {
@@ -1592,41 +1633,45 @@ char * th13json(unsigned char **buf, unsigned int flength) {
 
 	uint32_t next_stage_offset = 0x74;
 	for(unsigned int i = 0; i < replay->stage_count; i++) {
-		th13_replay_stage_t *stage = (th13_replay_stage_t*)&buffer[next_stage_offset];
+		if(next_stage_offset + sizeof(th13_replay_stage_t) < flength) {
+			th13_replay_stage_t *stage = (th13_replay_stage_t*)&buffer[next_stage_offset];
 
-		writer.StartObject();
-	    writer.Key("stage");
-	    writer.Uint(stage->stage_num);
-	    
-	    writer.Key("score");
-	    writer.Uint((uint64_t)stage->score * 10);
-	    
-	    writer.Key("power");
-		// char power[5];
-		// snprintf(power, 5, "%4f", stage->power * 0.05);
-		// writer.String(power);
-	    writer.Uint(stage->power);
-	    
-	    writer.Key("piv");
-	    writer.Uint(stage->piv);
-	    
-	    writer.Key("lives");
-	    writer.Uint(stage->lives);
+			writer.StartObject();
+			writer.Key("stage");
+			writer.Uint(stage->stage_num);
+			
+			writer.Key("score");
+			writer.Uint((uint64_t)stage->score * 10);
+			
+			writer.Key("power");
+			// char power[5];
+			// snprintf(power, 5, "%4f", stage->power * 0.05);
+			// writer.String(power);
+			writer.Uint(stage->power);
+			
+			writer.Key("piv");
+			writer.Uint(stage->piv);
+			
+			writer.Key("lives");
+			writer.Uint(stage->lives);
 
-		writer.Key("life_pieces");
-		writer.Uint(stage->life_pieces);
+			writer.Key("life_pieces");
+			writer.Uint(stage->life_pieces);
 
-		writer.Key("bombs");
-		writer.Uint(stage->bomb_pieces);
+			writer.Key("bombs");
+			writer.Uint(stage->bomb_pieces);
 
-		writer.Key("graze");
-		writer.Uint(stage->graze);
+			writer.Key("graze");
+			writer.Uint(stage->graze);
 
-		writer.Key("trance");
-		writer.Uint(stage->trance_gauge);
-	    
-	    next_stage_offset += stage->end_off + 0xc4;
-	    writer.EndObject();
+			writer.Key("trance");
+			writer.Uint(stage->trance_gauge);
+			
+			next_stage_offset += stage->end_off + 0xc4;
+			writer.EndObject();
+		} else {
+			i = replay->stage_count;
+		}
 	}
 
 	writer.EndArray();
@@ -1650,6 +1695,7 @@ char * th14json(unsigned char **buf, unsigned int flength) {
 	writer.Key("gameid");
 	writer.Int(11);
 
+	if(flength < sizeof(th13_replay_header_t)) return nullptr;
 	th13_replay_header_t *header = (th13_replay_header_t*)buffer;
 	uint32_t user_offset = header->userdata_offset;
 	if(user_offset + 8 < flength) {
@@ -1753,6 +1799,7 @@ char * th14json(unsigned char **buf, unsigned int flength) {
 	flength = th13decode(buf, flength);
 	buffer = *buf;
 
+	if(flength < sizeof(th143_replay_t)) return nullptr;
 	th14_replay_t *replay = (th14_replay_t*)buffer;
 
 	const char *shots[] = {
@@ -1793,38 +1840,42 @@ char * th14json(unsigned char **buf, unsigned int flength) {
 
 	uint32_t next_stage_offset = 0x94;
 	for(unsigned int i = 0; i < replay->stage_count; i++) {
-		th13_replay_stage_t *stage = (th13_replay_stage_t*)&buffer[next_stage_offset];
+		if(next_stage_offset + sizeof(th13_replay_stage_t) < flength) {
+			th13_replay_stage_t *stage = (th13_replay_stage_t*)&buffer[next_stage_offset];
 
-		writer.StartObject();
-	    writer.Key("stage");
-	    writer.Uint(stage->stage_num);
-	    
-	    writer.Key("score");
-	    writer.Uint((uint64_t)stage->score * 10);
-	    
-	    writer.Key("power");
-		// char power[5];
-		// snprintf(power, 5, "%4f", stage->power * 0.05);
-		// writer.String(power);
-	    writer.Uint(stage->power);
-	    
-	    writer.Key("piv");
-	    writer.Uint(stage->piv);
-	    
-	    writer.Key("lives");
-	    writer.Uint(stage->lives);
+			writer.StartObject();
+			writer.Key("stage");
+			writer.Uint(stage->stage_num);
+			
+			writer.Key("score");
+			writer.Uint((uint64_t)stage->score * 10);
+			
+			writer.Key("power");
+			// char power[5];
+			// snprintf(power, 5, "%4f", stage->power * 0.05);
+			// writer.String(power);
+			writer.Uint(stage->power);
+			
+			writer.Key("piv");
+			writer.Uint(stage->piv);
+			
+			writer.Key("lives");
+			writer.Uint(stage->lives);
 
-		writer.Key("life_pieces");
-		writer.Uint(stage->life_pieces);
+			writer.Key("life_pieces");
+			writer.Uint(stage->life_pieces);
 
-		writer.Key("bombs");
-		writer.Uint(stage->bomb_pieces);
+			writer.Key("bombs");
+			writer.Uint(stage->bomb_pieces);
 
-		writer.Key("graze");
-		writer.Uint(stage->graze);
-	    
-	    next_stage_offset += stage->end_off + 0xdc;
-	    writer.EndObject();
+			writer.Key("graze");
+			writer.Uint(stage->graze);
+			
+			next_stage_offset += stage->end_off + 0xdc;
+			writer.EndObject();
+		} else {
+			i = replay->stage_count;
+		}
 	}
 
 	writer.EndArray();
