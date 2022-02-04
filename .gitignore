@@ -1,6 +1,6 @@
 *.exe
 *.rpy
-*.json
 *.raw
+/.vscode
 /build
 /CMakeFiles

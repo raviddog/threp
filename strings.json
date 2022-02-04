@@ -1,0 +1,194 @@
+{
+    "gameids" : [
+        "th06",
+        "th07",
+        "th08",
+        "th09",
+        "th095",
+        "th10",
+        "th11",
+        "th12",
+        "th125",
+        "th128",
+        "th13",
+        "th14",
+        "th143",
+        "th15",
+        "th16",
+        "th165",
+        "th17",
+        "th18"
+    ],
+    "difficulty" : [
+        "Easy",
+        "Normal",
+        "Hard",
+        "Lunatic",
+        "Extra"
+    ],
+
+    "shottypes" : {
+        "th06" : {
+            "shots" : [
+                "ReimuA",
+                "ReimuB",
+                "MarisaA",
+                "MarisaB"
+            ]
+        },
+        "th07" : {
+            "shots" : [
+                "ReimuA",
+                "ReimuB",
+                "MarisaA",
+                "MarisaB",
+                "SakuyaA",
+                "SakuyaB"
+            ]
+        },
+        "th08" : {
+            "shots" : [
+                "Border Team (Reimu & Yukari)",
+                "Magic Team (Marisa & Alice)",
+                "Scarlet Devil Team (Sakuya & Remilia)",
+                "Ghost Team (Youmu & Yuyuko)",
+                "Reimu",
+                "Yukari",
+                "Marisa",
+                "Alice",
+                "Sakuya",
+                "Remilia",
+                "Youmu",
+                "Yuyuko"
+            ]
+        },
+        "th09" : {
+            "shots" : [
+                "Reimu",
+                "Marisa",
+                "Sakuya",
+                "Youmu",
+                "Reisen",
+                "Cirno",
+                "Lyrica",
+                "Mystia",
+                "Tewi",
+                "Aya",
+                "Medicine",
+                "Yuuka",
+                "Komachi",
+                "Eiki",
+                "Merlin",
+                "Lunasa"
+            ]
+        },
+        "th095" : {
+
+        },
+        "th10" : {
+            "shots" : [
+                "ReimuA",
+                "ReimuB",
+                "ReimuC",
+                "MarisaA",
+                "MarisaB",
+                "MarisaC"
+            ]
+        },
+        "th11" : {
+            "shots" : [
+                "ReimuA",
+                "ReimuB",
+                "ReimuC",
+                "MarisaA",
+                "MarisaB",
+                "MarisaC"
+            ]
+        },
+        "th12" : {
+            "shots" : [
+                "Reimu",
+                "Marisa",
+                "Sanae"
+            ],
+            "subshots" : [
+                "A",
+                "B"
+            ]
+        },
+        "th125" : {
+
+        },
+        "th128" : {
+
+        },
+        "th13" : {
+            "shots" : [
+                "Reimu",
+                "Marisa",
+                "Sanae",
+                "Youmu"
+            ]
+        },
+        "th14" : {
+            "shots" : [
+                "Reimu",
+                "Marisa",
+                "Sakuya"
+            ],
+            "subshots" : [
+                "A",
+                "B"
+            ]
+        },
+        "th143" : {
+
+        },
+        "th15" : {
+            "shots" : [
+                "Reimu",
+                "Marisa",
+                "Sanae",
+                "Reisen"
+            ]
+        },
+        "th16" : {
+            "shots" : [
+                "Reimu",
+                "Cirno",
+                "Aya",
+                "Marisa"
+            ],        
+            "subshots" : [
+                "Spring",
+                "Summer",
+                "Autumn",
+                "Winter",
+                "Extra"
+            ]
+        },
+        "th165" : {
+
+        },
+        "th17" : {
+            "shots" : [
+                "Reimu",
+                "Marisa",
+                "Youmu"
+            ],
+            "subshots" : [
+                "Wolf",
+                "Otter",
+                "Eagle"
+            ]
+        },
+        "th18" : {
+            "shots" : [
+                "Reimu",
+                "Marisa",
+                "Sakuya",
+                "Sanae"
+            ]
+        }
+    }
+}
