@@ -137,24 +137,9 @@ char * th06json(unsigned char **buf, unsigned int flength) {
 	snprintf(ver, 5, "%.2hhx%.2hhx", header->version[0], header->version[1]);
 	writer.String(ver);
 
-	//	player
-	const char *shots[] = {
-		"ReimuA",
-		"ReimuB",
-		"MarisaA",
-		"MarisaB"
-	};
-
 	writer.Key("shot");
-	if(header->shot < 4) {
-		writer.String(shots[header->shot]);
-	} else {
-		std::string msg = "Unknown ";
-		msg += header->shot;
-		writer.String(msg.c_str());
-	}
+	writer.Uint(header->shot);
 
-	//	difficulty
 	writer.Key("difficulty");
 	writer.Uint(header->difficulty);
 
@@ -261,15 +246,6 @@ char * th07json(unsigned char **buf, unsigned int flength) {
 	flength = th07decode2(buf, flength);
 	buffer = *buf;
 
-	const char *shots[] = {
-		"ReimuA",
-		"ReimuB",
-		"MarisaA",
-		"MarisaB",
-		"SakuyaA",
-		"SakuyaB"
-	};
-
 	if(flength < sizeof(th07_replay_t)) {
 		free(header);
 		return nullptr;
@@ -277,13 +253,7 @@ char * th07json(unsigned char **buf, unsigned int flength) {
 	th07_replay_t *rep = (th07_replay_t*)buffer;
 	
 	writer.Key("shot");
-	if(rep->shot < 6) {
-		writer.String(shots[rep->shot]);
-	} else {
-		std::string msg = "Unknown ";
-		msg += rep->shot;
-		writer.String(msg.c_str());
-	}
+	writer.Uint(rep->shot);
 
 	writer.Key("difficulty");
 	writer.Uint(rep->difficulty);
@@ -520,30 +490,9 @@ char * th08json(unsigned char **buf, unsigned int flength) {
 		return nullptr;
 	}
 	th08_replay_t *stage_header = (th08_replay_t*)buffer;
-	
-	const char *shots[12] = {
-		"Border Team (Reimu & Yukari)",
-		"Magic Team (Marisa & Alice)",
-		"Scarlet Devil Team (Sakuya & Remilia)",
-		"Ghost Team (Youmu & Yuyuko)",
-		"Reimu",
-		"Yukari",
-		"Marisa",
-		"Alice",
-		"Sakuya",
-		"Remilia",
-		"Youmu",
-		"Yuyuko",
-	};
 
 	writer.Key("shot");
-	if(stage_header->shot < 12) {
-		writer.String(shots[stage_header->shot]);
-	} else {
-		std::string msg = "Unknown ";
-		msg += stage_header->shot;
-		writer.String(msg.c_str());
-	}
+	writer.Uint(stage_header->shot);
 
 	writer.Key("difficulty");
 	writer.Uint(stage_header->difficulty);
@@ -720,25 +669,6 @@ char * th09json(unsigned char **buf, unsigned int flength) {
 		return nullptr;
 	}
 	th09_replay_t *stage_header = (th09_replay_t*)buffer;
-	
-	const char *shots[16] = {
-		"Reimu",
-		"Marisa",
-		"Sakuya",
-		"Youmu",
-		"Reisen",
-		"Cirno",
-		"Lyrica",
-		"Mystia",
-		"Tewi",
-		"Aya",
-		"Medicine",
-		"Yuuka",
-		"Komachi",
-		"Eiki",
-		"Merlin",
-		"Lunasa"
-	};
 
 	writer.Key("difficulty");
 	writer.Uint(stage_header->difficulty);
@@ -775,13 +705,7 @@ char * th09json(unsigned char **buf, unsigned int flength) {
 				writer.Uint64((uint64_t)stage->score * 10);
 
 				writer.Key("shot");
-				if(stage->shot < 16) {
-					writer.String(shots[stage->shot]);
-				} else {
-					std::string msg = "Unknown ";
-					msg += stage->shot;
-					writer.String(msg.c_str());
-				}
+				writer.Uint(stage->shot);
 
 				writer.Key("lives");
 				writer.Uint(stage->lives);
@@ -794,13 +718,7 @@ char * th09json(unsigned char **buf, unsigned int flength) {
 				writer.Uint64((uint64_t)stage_ai->score * 10);
 
 				writer.Key("shot");
-				if(stage_ai->shot < 16) {
-					writer.String(shots[stage_ai->shot]);
-				} else {
-					std::string msg = "Unknown ";
-					msg += stage_ai->shot;
-					writer.String(msg.c_str());
-				}
+				writer.Uint(stage_ai->shot);
 
 				writer.Key("lives");
 				writer.Uint(stage_ai->lives);
@@ -825,13 +743,7 @@ char * th09json(unsigned char **buf, unsigned int flength) {
 			writer.Bool(player1->ai);
 
 			writer.Key("shot");
-			if(player1->shot < 16) {
-				writer.String(shots[player1->shot]);
-			} else {
-				std::string msg = "Unknown ";
-				msg += player1->shot;
-				writer.String(msg.c_str());
-			}
+			writer.Uint(player1->shot);
 
 			writer.Key("score");
 			writer.Uint64((uint64_t)player1->score * 10);
@@ -844,13 +756,7 @@ char * th09json(unsigned char **buf, unsigned int flength) {
 			writer.Bool(player2->ai);
 
 			writer.Key("shot");
-			if(player2->shot < 16) {
-				writer.String(shots[player2->shot]);
-			} else {
-				std::string msg = "Unknown ";
-				msg += player2->shot;
-				writer.String(msg.c_str());
-			}
+			writer.Uint(player2->shot);
 
 			writer.Key("score");
 			writer.Uint64((uint64_t)player2->score * 10);
@@ -989,15 +895,6 @@ char * th10json(unsigned char **buf, unsigned int flength) {
 	if(flength < sizeof(th10_replay_t)) return nullptr;
 	th10_replay_t *replay = (th10_replay_t*)buffer;
 
-	const char *shots[] = {
-		"ReimuA",
-		"ReimuB",
-		"ReimuC",
-		"MarisaA",
-		"MarisaB",
-		"MarisaC"
-	};
-
 	writer.Key("name")	;
 	writer.String(replay->name);
 
@@ -1013,13 +910,7 @@ char * th10json(unsigned char **buf, unsigned int flength) {
 	writer.Uint64((uint64_t)replay->score * 10);
 
 	writer.Key("shot");
-	if(replay->shot < 6) {
-		writer.String(shots[replay->shot]);
-	} else {
-		std::string msg = "Unknown ";
-		msg += replay->shot;
-		writer.String(msg.c_str());
-	}
+	writer.Uint(replay->shot);
 
 	writer.Key("difficulty");
 	writer.Uint(replay->difficulty);
@@ -1189,15 +1080,6 @@ char * th11json(unsigned char **buf, unsigned int flength) {
 	if(flength < sizeof(th11_replay_t)) return nullptr;
 	th11_replay_t *replay = (th11_replay_t*)buffer;
 
-	const char *shots[] = {
-		"ReimuA",
-		"ReimuB",
-		"ReimuC",
-		"MarisaA",
-		"MarisaB",
-		"MarisaC"
-	};
-
 	writer.Key("name")	;
 	writer.String(replay->name);
 
@@ -1213,13 +1095,7 @@ char * th11json(unsigned char **buf, unsigned int flength) {
 	writer.Uint64((uint64_t)replay->score * 10);
 
 	writer.Key("shot");
-	if(replay->shot < 6) {
-		writer.String(shots[replay->shot]);
-	} else {
-		std::string msg = "Unknown ";
-		msg += replay->shot;
-		writer.String(msg.c_str());
-	}
+	writer.Uint(replay->shot);
 
 	writer.Key("difficulty");
 	writer.Uint(replay->difficulty);
@@ -1406,25 +1282,11 @@ char * th12json(unsigned char **buf, unsigned int flength) {
 	writer.Key("score");
 	writer.Uint64((uint64_t)replay->score * 10);
 
-	const char *shots[] = {
-		"ReimuA",
-		"ReimuB",
-		"MarisaA",
-		"MarisaB",
-		"SanaeA",
-		"SanaeB"
-	};
-
 	writer.Key("shot");
-	if(replay->shot < 3 && replay->subshot < 2) {
-		writer.String(shots[replay->shot * 2 + replay->subshot]);
-	} else {
-		std::string msg = "Unknown ";
-		msg += replay->shot;
-		msg += " ";
-		msg += replay->subshot;
-		writer.String(msg.c_str());
-	}
+	writer.Uint(replay->shot);
+
+	writer.Key("subshot");
+	writer.Uint(replay->subshot);
 
 	writer.Key("difficulty");
 	writer.Uint(replay->difficulty);
@@ -1608,13 +1470,6 @@ char * th13json(unsigned char **buf, unsigned int flength) {
 	if(flength < sizeof(th13_replay_t)) return nullptr;
 	th13_replay_t *replay = (th13_replay_t*)buffer;
 
-	const char *shots[] = {
-		"Reimu",
-		"Marisa",
-		"Sanae",
-		"Youmu"
-	};
-
 	writer.Key("name");
 	writer.String(replay->name);
 
@@ -1630,13 +1485,7 @@ char * th13json(unsigned char **buf, unsigned int flength) {
 	writer.Uint64((uint64_t)replay->score * 10);
 
 	writer.Key("shot");
-	if(replay->shot < 4) {
-		writer.String(shots[replay->shot]);
-	} else {
-		std::string msg = "Unknown ";
-		msg += replay->shot;
-		writer.String(msg.c_str());
-	}
+	writer.Uint(replay->shot);
 
 	writer.Key("difficulty");
 	writer.Uint(replay->difficulty);
@@ -1815,15 +1664,6 @@ char * th14json(unsigned char **buf, unsigned int flength) {
 	if(flength < sizeof(th14_replay_t)) return nullptr;
 	th14_replay_t *replay = (th14_replay_t*)buffer;
 
-	const char *shots[] = {
-		"ReimuA",
-		"ReimuB",
-		"MarisaA",
-		"MarisaB",
-		"SakuyaA",
-		"SakuyaB"
-	};
-
 	writer.Key("name");
 	writer.String(replay->name);
 
@@ -1839,15 +1679,10 @@ char * th14json(unsigned char **buf, unsigned int flength) {
 	writer.Uint64((uint64_t)replay->score * 10);
 
 	writer.Key("shot");
-	if(replay->shot < 3 && replay->subshot < 2) {
-		writer.String(shots[replay->shot * 2 + replay->subshot]);
-	} else {
-		std::string msg = "Unknown ";
-		msg += replay->shot;
-		msg += " ";
-		msg += replay->subshot;
-		writer.String(msg.c_str());
-	}
+	writer.Uint(replay->shot);
+	
+	writer.Key("subshot");
+	writer.Uint(replay->subshot);
 
 	writer.Key("difficulty");
 	writer.Uint(replay->difficulty);
@@ -2029,13 +1864,6 @@ char * th15json(unsigned char **buf, unsigned int flength) {
 	if(flength < sizeof(th15_replay_t)) return nullptr;
 	th15_replay_t *replay = (th15_replay_t*)buffer;
 
-	const char *shots[] = {
-		"Reimu",
-		"Marisa",
-		"Sanae",
-		"Reisen"
-	};
-
 	writer.Key("name");
 	writer.String(replay->name);
 
@@ -2051,13 +1879,7 @@ char * th15json(unsigned char **buf, unsigned int flength) {
 	writer.Uint64((uint64_t)replay->score * 10);
 
 	writer.Key("shot");
-	if(replay->shot < 4) {
-		writer.String(shots[replay->shot]);
-	} else {
-		std::string msg = "Unknown ";
-		msg += replay->shot;
-		writer.String(msg.c_str());
-	}
+	writer.Uint(replay->shot);
 
 	writer.Key("difficulty");
 	writer.Uint(replay->difficulty);
@@ -2239,21 +2061,6 @@ char * th16json(unsigned char **buf, unsigned int flength) {
 	if(flength < sizeof(th16_replay_t)) return nullptr;
 	th16_replay_t *replay = (th16_replay_t*)buffer;
 
-	const char *shots[] = {
-		"Reimu",
-		"Cirno",
-		"Aya",
-		"Marisa"
-	};
-
-	const char *subshots[] = {
-		"Spring",
-		"Summer",
-		"Autumn"
-		"Winter",
-		"Extra"
-	};
-
 	writer.Key("name");
 	writer.String(replay->name);
 
@@ -2269,18 +2076,10 @@ char * th16json(unsigned char **buf, unsigned int flength) {
 	writer.Uint64((uint64_t)replay->score * 10);
 
 	writer.Key("shot");
-	if(replay->shot < 4 && replay->subseason < 5) {
-		std::string shot(shots[replay->shot]);
-		shot += " ";
-		shot += subshots[replay->subseason];
-		writer.String(shot.c_str());
-	} else {
-		std::string msg = "Unknown ";
-		msg += replay->shot;
-		msg += " ";
-		msg += replay->subseason;
-		writer.String(msg.c_str());
-	}
+	writer.Uint(replay->shot);
+
+	writer.Key("subshot");
+	writer.Uint(replay->subseason);
 
 	writer.Key("cleared");
 	writer.Uint(replay->cleared);
