@@ -76,9 +76,8 @@ struct th07_replay_stage_t {
     uint32_t cherrymax;
     uint32_t cherry;
     uint32_t graze;
-    uint32_t unknown;
-    uint32_t unknown2;
-    uint32_t unknown3;
+    uint32_t unknown;   //  possibly lives gained
+    uint32_t unknown2;  //  possibly next point item extend
     uint16_t unknown4;
     uint8_t power;
     uint8_t lives;
