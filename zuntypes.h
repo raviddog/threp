@@ -104,6 +104,10 @@ struct th08_replay_t {
 	uint8_t difficulty;
 	char date[6];
 	char name[9];
+	char padding;
+	uint16_t spell_card_id;
+	char padding2;
+	char spell_card_name[50];
 };
 
 struct th08_replay_stage_t {
