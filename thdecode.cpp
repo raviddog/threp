@@ -1,4 +1,5 @@
 #include "common.h"
+#include "string.h"
 
 unsigned int th06decode(unsigned char **buffer, unsigned int flength) {
 	unsigned int i;
@@ -29,9 +30,14 @@ unsigned int th07decode(unsigned char **buffer, unsigned int flength) {
 	dlength = *((unsigned int*) (&buf[0x18]));
 	decodedata = new unsigned char[dlength];
 	decompress(rawdata, decodedata, length);
-	
+
+	unsigned char *newbuf = new unsigned char[dlength + 0x54];
+	memcpy(newbuf, buf, 0x54);
+	memcpy(newbuf + 0x54, decodedata, dlength);
+
 	delete[] buf;
-	*buffer = decodedata;
+	delete[] decodedata;
+	*buffer = newbuf;
 	return dlength;
 }
 
@@ -82,8 +88,13 @@ unsigned int th08decode(unsigned char **buffer, unsigned int flength) {
 	decodedata = new unsigned char[dlength];
 	decompress(rawdata, decodedata, length - 0x68);
 
+	unsigned char *newbuf = new unsigned char[dlength + 0x68];
+	memcpy(newbuf, buf, 0x68);
+	memcpy(newbuf + 0x68, decodedata, dlength);
+
 	delete[] buf;
-	*buffer = decodedata;
+	delete[] decodedata;
+	*buffer = newbuf;
 	return dlength;
 }
 
@@ -134,8 +145,13 @@ unsigned int th09decode(unsigned char **buffer, unsigned int flength) {
 	decodedata = new unsigned char[dlength];
 	decompress(rawdata, decodedata, length - 0xc0);
 
+	unsigned char *newbuf = new unsigned char[dlength + 0xc0];
+	memcpy(newbuf, buf, 0xc0);
+	memcpy(newbuf + 0xc0, decodedata, dlength);
+
 	delete[] buf;
-	*buffer = decodedata;
+	delete[] decodedata;
+	*buffer = newbuf;
 	return dlength;
 }
 
