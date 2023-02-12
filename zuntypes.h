@@ -205,8 +205,8 @@ struct th11_replay_t {
     uint32_t score;
     char unknown2[64];
     uint32_t stagecount;
-    uint32_t unknown3;
     uint32_t shot;
+    uint32_t subshot;
     uint32_t difficulty;
 };
 
