@@ -73,8 +73,7 @@ struct th06nc_replay_t {
 
 struct th06nc_replay_stage_t {
 	uint64_t score;
-    uint16_t random_seed;
-    uint16_t unknown1;
+    uint32_t random_seed;
     uint8_t power;
     int8_t lives;
     int8_t bombs;
