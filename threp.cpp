@@ -39,7 +39,13 @@ int main(int argc, char *argv[]) {
 
 		switch(magic) {
 			case 0x50523654:  //"T6RP"
-				flength = th06decode(buffer, flength);
+				if(buf[4] == 0x02) {
+					//	EoSD
+					flength = th06decode(buffer, flength);
+				} else if(buf[4] == 0x0b) {
+					//	EoSD NC
+					flength = th06ncdecode(buffer, flength);
+				}
 				break;
 			case 0x50523754:  //"T7RP"
 				flength = th07decode(buffer, flength);			

@@ -13,6 +13,19 @@ unsigned int th06decode(unsigned char **buffer, unsigned int flength) {
 	return flength;
 }
 
+unsigned int th06ncdecode(unsigned char **buffer, unsigned int flength) {
+	unsigned int i;
+	unsigned char base, *buf = *buffer;
+	base = *((unsigned char*) (&buf[0x0e]));
+	base = 99;	//	temp, works for my test replay, cannot find value in file
+	for (i = 0x0f; i < flength; ++i) {
+		buf[i] -= base;
+		base += 7;
+	}
+	buffer = &buf;
+	return flength;
+}
+
 unsigned int th07decode(unsigned char **buffer, unsigned int flength) {
 	unsigned char *buf = *buffer;
 	unsigned char *rawdata = &buf[0x54], *decodedata;

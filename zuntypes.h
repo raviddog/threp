@@ -48,6 +48,41 @@ struct th06_replay_stage_t {
     uint8_t rank;	
 };
 
+struct th06nc_replay_header_t {
+    char magic[4];
+    char version[2];
+    char unknown;
+    uint8_t shot;
+    uint8_t difficulty;
+    char unknown2[7];
+    char data;
+};
+
+struct th06nc_replay_t {
+    char unknown[4];
+    char date[9];
+    char name[9];
+    uint16_t unknown2;
+    uint64_t score;
+    uint32_t unknown3;
+    float slowdown; //  not sure which of these it is
+    uint32_t unknown5;
+    uint32_t unknown6;
+    uint64_t stage_offsets[7];
+};
+
+struct th06nc_replay_stage_t {
+	uint64_t score;
+    uint16_t random_seed;
+    uint16_t unknown1;
+    uint8_t power;
+    int8_t lives;
+    int8_t bombs;
+    uint8_t rank;
+    uint32_t unknown;
+    uint32_t unknown2[3];
+};
+
 struct th07_replay_header_t {
     char magic[4];
     char version[2];

@@ -2,6 +2,7 @@
 #define THDECODE_H
 
 unsigned int th06decode(unsigned char **buffer, unsigned int flength);
+unsigned int th06ncdecode(unsigned char **buffer, unsigned int flength);
 unsigned int th07decode(unsigned char **buffer, unsigned int flength);
 unsigned int th08decode(unsigned char **buffer, unsigned int flength);
 unsigned int th09decode(unsigned char **buffer, unsigned int flength);

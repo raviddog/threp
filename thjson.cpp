@@ -48,7 +48,13 @@ int main(int argc, char *argv[]) {
 
 	switch(magic) {
 		case 0x50523654:  //"T6RP"
-			out = th06json(buf, flength);
+			if(buffer[4] == 0x02) {
+				//	EoSD
+				out = th06json(buf, flength);
+			} else if(buffer[4] == 0x0b) {
+				//	EoSD NC
+				out = th06ncjson(buf, flength);
+			}
 			break;
 		case 0x50523754:  //"T7RP"
 			out = th07json(buf, flength);
@@ -179,6 +185,98 @@ char * th06json(unsigned char **buf, unsigned int flength) {
 	for(int i = 0; i < 7; i++) {
 		if(rep->stage_offsets[i] != 0x00 && rep->stage_offsets[i] + sizeof(th06_replay_stage_t) < flength) {
 			th06_replay_stage_t *stage = (th06_replay_stage_t*)&buffer[rep->stage_offsets[i]];
+			writer.StartObject();
+			writer.Key("stage");
+			writer.Int(i + 1);
+
+			writer.Key("score");
+			writer.Uint(stage->score);
+
+			writer.Key("power");
+			writer.Uint(stage->power);
+
+			writer.Key("lives");
+			writer.Int(stage->lives);
+
+			writer.Key("bombs");
+			writer.Int(stage->bombs);
+
+			writer.Key("rank");
+			writer.Uint(stage->rank);
+
+			writer.EndObject();
+		}
+	}
+
+	writer.EndArray();
+	writer.EndObject();
+
+	int jsonsize = s.GetSize();
+	char *json = new char[jsonsize];
+	memcpy(json, s.GetString(), jsonsize);
+	return json;
+}
+
+char * th06ncjson(unsigned char **buf, unsigned int flength) {
+	using namespace rapidjson;
+	StringBuffer s;
+	Writer<StringBuffer> writer(s);
+
+	unsigned char *buffer = *buf;
+
+	writer.StartObject();
+	writer.Key("gameid");
+	writer.Int(0);
+
+	if(flength < sizeof(th06nc_replay_header_t)) return nullptr;
+	th06nc_replay_header_t *header = (th06nc_replay_header_t *)buffer;
+
+	//	version
+	writer.Key("version");
+	char ver[5] = "    ";
+	snprintf(ver, 5, "%.2hhx%.2hhx", header->version[0], header->version[1]);
+	writer.String(ver);
+
+	writer.Key("shot");
+	writer.Uint(header->shot);
+
+	writer.Key("difficulty");
+	writer.Uint(header->difficulty);
+
+	//	now decode the replay
+	flength = th06ncdecode(buf, flength);
+	buffer = *buf;
+
+	if(flength < sizeof(th06nc_replay_t)) return nullptr;
+	th06nc_replay_t *rep = (th06nc_replay_t*)&buffer[0x10];
+
+	//	date, null terminated string
+	rep->date[8] = '\0';
+	writer.Key("date");
+	writer.String(rep->date);
+
+	//	name, null terminated string
+	//	ensure that its null terminated
+	if(rep->name[8] != '\0') rep->name[8] = '\0';
+	writer.Key("name");
+	writer.String(rep->name);
+
+	//	score
+	writer.Key("score");
+	writer.Uint(rep->score);
+
+	//	slowdown, format to appear as ingame
+	writer.Key("slowdown");
+	char val[6];
+	snprintf(val, 6, "%5f", rep->slowdown);
+	writer.String(val);
+
+	writer.Key("stage");
+	writer.StartArray();
+
+	for(int i = 0; i < 7; i++) {
+		if(rep->stage_offsets[i] != 0x00 && rep->stage_offsets[i] + sizeof(th06nc_replay_stage_t) < flength) {
+			th06nc_replay_stage_t *stage = (th06nc_replay_stage_t*)&buffer[rep->stage_offsets[i]];
 			writer.StartObject();
 			writer.Key("stage");
 			writer.Int(i + 1);
