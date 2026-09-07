@@ -16,8 +16,7 @@ unsigned int th06decode(unsigned char **buffer, unsigned int flength) {
 unsigned int th06ncdecode(unsigned char **buffer, unsigned int flength) {
 	unsigned int i;
 	unsigned char base, *buf = *buffer;
-	base = *((unsigned char*) (&buf[0x0e]));
-	base = 99;	//	temp, works for my test replay, cannot find value in file
+	base = buf[0x1c] + 165;	//	Can also use 0x25 + 102
 	for (i = 0x0f; i < flength; ++i) {
 		buf[i] -= base;
 		base += 7;
