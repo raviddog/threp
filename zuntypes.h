@@ -51,7 +51,7 @@ struct th06_replay_stage_t {
 struct th06nc_replay_header_t {
     char magic[4];
     char version[2];
-    char unknown;
+    uint8_t mode;
     uint8_t shot;
     uint8_t difficulty;
     char unknown2[7];
@@ -73,13 +73,17 @@ struct th06nc_replay_t {
 
 struct th06nc_replay_stage_t {
 	uint64_t score;
-    uint32_t random_seed;
+    uint16_t random_seed;
+    uint8_t unknown1;
+    uint8_t unknown2;
     uint8_t power;
     int8_t lives;
     int8_t bombs;
-    uint8_t rank;
-    uint32_t unknown;
-    uint32_t unknown2[3];
+    uint8_t unknown3;
+    uint8_t unknown4;
+    uint8_t unknown5;
+    uint8_t challenge_misses;
+    uint8_t unknown6;
 };
 
 struct th07_replay_header_t {

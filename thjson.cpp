@@ -237,6 +237,13 @@ char * th06ncjson(unsigned char **buf, unsigned int flength) {
 	snprintf(ver, 5, "%.2hhx%.2hhx", header->version[0], header->version[1]);
 	writer.String(ver);
 
+	writer.Key("mode");
+	if(header->mode == 0) {
+		writer.String("Normal");
+	} else if(header->mode == 1) {
+		writer.String("Challenge");
+	}
+
 	writer.Key("shot");
 	writer.Uint(header->shot);
 
@@ -293,8 +300,24 @@ char * th06ncjson(unsigned char **buf, unsigned int flength) {
 			writer.Key("bombs");
 			writer.Int(stage->bombs);
 
-			writer.Key("rank");
-			writer.Uint(stage->rank);
+			writer.Key("challenge-misses");
+			writer.Int(stage->challenge_misses);
+
+			// writer.Key("rank");
+			// writer.Uint(stage->rank);
+
+			writer.Key("rank1");
+			writer.Uint(stage->unknown1);
+			writer.Key("rank2");
+			writer.Uint(stage->unknown2);
+			writer.Key("rank3");
+			writer.Uint(stage->unknown3);
+			writer.Key("rank4");
+			writer.Uint(stage->unknown4);
+			writer.Key("rank5");
+			writer.Uint(stage->unknown5);
+			writer.Key("rank6");
+			writer.Uint(stage->unknown6);
 
 			writer.EndObject();
 		}
