@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
 			if(buffer[4] == 0x02) {
 				//	EoSD
 				out = th06json(buf, flength);
-			} else if(buffer[4] == 0x0b) {
+			} else if(buffer[4] == 0x0F) {
 				//	EoSD NC
 				out = th06ncjson(buf, flength);
 			}
@@ -242,6 +242,8 @@ char * th06ncjson(unsigned char **buf, unsigned int flength) {
 		writer.String("Normal");
 	} else if(header->mode == 1) {
 		writer.String("Challenge");
+	} else if(header->mode == 3) {
+		writer.String("Spell Practice");
 	}
 
 	writer.Key("shot");
@@ -255,7 +257,7 @@ char * th06ncjson(unsigned char **buf, unsigned int flength) {
 	buffer = *buf;
 
 	if(flength < sizeof(th06nc_replay_t)) return nullptr;
-	th06nc_replay_t *rep = (th06nc_replay_t*)&buffer[0x10];
+	th06nc_replay_t *rep = (th06nc_replay_t*)&buffer[0x14];
 
 	//	date, null terminated string
 	rep->date[8] = '\0';
@@ -302,22 +304,6 @@ char * th06ncjson(unsigned char **buf, unsigned int flength) {
 
 			writer.Key("challenge-misses");
 			writer.Int(stage->challenge_misses);
-
-			// writer.Key("rank");
-			// writer.Uint(stage->rank);
-
-			writer.Key("rank1");
-			writer.Uint(stage->unknown1);
-			writer.Key("rank2");
-			writer.Uint(stage->unknown2);
-			writer.Key("rank3");
-			writer.Uint(stage->unknown3);
-			writer.Key("rank4");
-			writer.Uint(stage->unknown4);
-			writer.Key("rank5");
-			writer.Uint(stage->unknown5);
-			writer.Key("rank6");
-			writer.Uint(stage->unknown6);
 
 			writer.EndObject();
 		}

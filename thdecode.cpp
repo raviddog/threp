@@ -16,8 +16,10 @@ unsigned int th06decode(unsigned char **buffer, unsigned int flength) {
 unsigned int th06ncdecode(unsigned char **buffer, unsigned int flength) {
 	unsigned int i;
 	unsigned char base, *buf = *buffer;
-	base = buf[0x1c] + 165;	//	Can also use 0x25 + 102
-	for (i = 0x0f; i < flength; ++i) {
+	// base = buf[0x1c] + 165;	//	Can also use 0x25 + 102
+	base = buf[0x12];
+	// for (i = 0x0f; i < flength; ++i) {
+	for(i = 0x13; i < flength; ++i) {
 		buf[i] -= base;
 		base += 7;
 	}

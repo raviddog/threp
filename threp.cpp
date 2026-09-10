@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 				if(buf[4] == 0x02) {
 					//	EoSD
 					flength = th06decode(buffer, flength);
-				} else if(buf[4] == 0x0b) {
+				} else if(buf[4] >= 0x0b) {
 					//	EoSD NC
 					flength = th06ncdecode(buffer, flength);
 				}

@@ -53,20 +53,21 @@ struct th06nc_replay_header_t {
     char version[2];
     uint8_t mode;
     uint8_t shot;
-    uint8_t difficulty;
-    char unknown2[7];
-    char data;
+    uint32_t difficulty;
+    uint32_t checksum;
+    char unknown[2];
+    uint8_t key;
+    char unknown_2;
 };
 
 struct th06nc_replay_t {
-    char unknown[4];
     char date[9];
     char name[9];
     uint16_t unknown2;
     uint64_t score;
-    uint32_t unknown3;
-    float slowdown; //  not sure which of these it is
-    uint32_t unknown5;
+    float unknown3;
+    float slowdown;
+    float unknown5;
     uint32_t unknown6;
     uint64_t stage_offsets[7];
 };
