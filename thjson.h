@@ -2,6 +2,7 @@
 #define THJSON_H
 
 char * th06json(unsigned char **buffer, unsigned int flength);
+char * th06cjson(unsigned char **buffer, unsigned int flength);
 char * th06ncjson(unsigned char **buffer, unsigned int flength);
 char * th07json(unsigned char **buffer, unsigned int flength);
 char * th08json(unsigned char **buffer, unsigned int flength);

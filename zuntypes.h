@@ -48,6 +48,18 @@ struct th06_replay_stage_t {
     uint8_t rank;	
 };
 
+struct th06c_replay_t {
+    char date[9];
+    char name[9];
+    uint16_t unknown2;
+    uint32_t score;
+    uint32_t unknown3;
+    float slowdown;
+    uint32_t unknown4;
+    uint32_t unknown5;
+    uint64_t stage_offsets[7];
+};
+
 struct th06nc_replay_header_t {
     char magic[4];
     char version[2];
